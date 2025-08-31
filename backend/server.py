@@ -364,6 +364,8 @@ async def search_theses(
             filter_dict["supervisor_names"] = {"$regex": re.escape(supervisor), "$options": "i"}
         if university:
             filter_dict["university"] = {"$regex": re.escape(university), "$options": "i"}
+        if university:
+            filter_dict["university"] = {"$regex": re.escape(university), "$options": "i"}
         if year:
             filter_dict["defense_date"] = year
         if access_type:
