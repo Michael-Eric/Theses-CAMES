@@ -768,6 +768,12 @@ class ThesesCAMESAPITester:
         self.test_search_theses()
         self.test_get_thesis_by_id()
         
+        # Test weekly view tracking
+        print("\n📊 WEEKLY VIEW TRACKING TESTS")
+        self.test_weekly_view_tracking()
+        self.test_weekly_view_data_consistency()
+        self.test_star_calculation_accuracy()
+        
         # Test rankings
         print("\n🏆 RANKINGS TESTS")
         self.test_author_rankings()
