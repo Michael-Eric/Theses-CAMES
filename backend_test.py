@@ -137,7 +137,7 @@ class ThesesCAMESAPITester:
             return False, None
 
     def test_author_rankings(self):
-        """Test author rankings endpoint"""
+        """Test author rankings endpoint with weekly views"""
         try:
             response = requests.get(f"{self.api_url}/rankings/authors?limit=10", timeout=10)
             success = response.status_code == 200
@@ -148,22 +148,33 @@ class ThesesCAMESAPITester:
                 if isinstance(data, list):
                     details += f", Found {len(data)} authors"
                     if data:
-                        # Check first author has required fields
+                        # Check first author has required fields for weekly views
                         first_author = data[0]
-                        required_fields = ['author_name', 'citations_count', 'stars', 'theses_count']
+                        required_fields = ['author_name', 'weekly_views', 'total_views', 'stars', 'theses_count', 'disciplines']
                         missing_fields = [field for field in required_fields if field not in first_author]
                         if missing_fields:
                             success = False
                             details += f", Missing fields: {missing_fields}"
+                        else:
+                            # Verify weekly_views is present and numeric
+                            weekly_views = first_author.get('weekly_views', 0)
+                            stars = first_author.get('stars', 0)
+                            details += f", Top author: {first_author['author_name']}, Weekly views: {weekly_views}, Stars: {stars}"
+                            
+                            # Verify star calculation logic
+                            expected_stars = self.calculate_expected_stars(weekly_views)
+                            if stars != expected_stars:
+                                success = False
+                                details += f", Star calculation error: expected {expected_stars}, got {stars}"
                 else:
                     success = False
                     details += ", Response is not a list"
                     
-            self.log_test("Author Rankings", success, details)
-            return success
+            self.log_test("Author Rankings (Weekly Views)", success, details)
+            return success, data if success else []
         except Exception as e:
-            self.log_test("Author Rankings", False, f"Error: {str(e)}")
-            return False
+            self.log_test("Author Rankings (Weekly Views)", False, f"Error: {str(e)}")
+            return False, []
 
     def test_university_rankings(self):
         """Test university rankings endpoint"""
