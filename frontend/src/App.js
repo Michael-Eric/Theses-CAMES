@@ -29,6 +29,8 @@ const API = `${BACKEND_URL}/api`;
 
 // Header Component
 const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
+  const { t } = useTranslation();
+  
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,8 +40,8 @@ const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
               <BookOpen className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Thèses CAMES</h1>
-              <p className="text-sm text-gray-500">Plateforme de thèses académiques</p>
+              <h1 className="text-2xl font-bold text-gray-900">{t('site.title')}</h1>
+              <p className="text-sm text-gray-500">{t('site.subtitle')}</p>
             </div>
           </div>
           
@@ -48,7 +50,7 @@ const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Rechercher par titre, auteur, mots-clés..."
+                placeholder={t('search.placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => {
@@ -63,19 +65,20 @@ const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
                 className="absolute right-1 top-1 h-8 px-3"
                 size="sm"
               >
-                Rechercher
+                {t('search.searchButton')}
               </Button>
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
+            <LanguageSwitcher />
             <Button variant="outline" size="sm">
               <Users className="w-4 h-4 mr-2" />
-              Palmarès
+              {t('stats.viewRankings')}
             </Button>
             <Button variant="outline" size="sm">
               <University className="w-4 h-4 mr-2" />
-              Universités
+              {t('navigation.universities', 'Universités')}
             </Button>
             <UserMenu />
           </div>
