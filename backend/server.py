@@ -92,7 +92,10 @@ app = FastAPI(
             "url": "https://theses-cames.preview.emergentagent.com/api",
             "description": "Serveur de production"
         }
-    ]
+    ],
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
 )
 
 # Create a router with the /api prefix
