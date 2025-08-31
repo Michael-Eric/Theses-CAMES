@@ -685,6 +685,55 @@ async def get_import_status():
         logger.error(f"Error getting import status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get import status")
 
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    try:
+        if not stripe_checkout:
+            raise HTTPException(status_code=500, detail="Payment system not configured")
+        
+        # Get request body and signature
+        request_body = await request.body()
+        stripe_signature = request.headers.get("Stripe-Signature")
+        
+        if not stripe_signature:
+            raise HTTPException(status_code=400, detail="Missing Stripe signature")
+        
+        # Handle webhook
+        webhook_response = await stripe_checkout.handle_webhook(request_body, stripe_signature)
+        
+        # Process the webhook event
+        if webhook_response.event_type == "checkout.session.completed":
+            session_id = webhook_response.session_id
+            
+            # Update transaction status
+            await db.payment_transactions.update_one(
+                {"session_id": session_id, "payment_status": {"$ne": "paid"}},
+                {
+                    "$set": {
+                        "status": "completed",
+                        "payment_status": "paid",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            # Get transaction to update thesis
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            if transaction:
+                await db.theses.update_one(
+                    {"id": transaction["thesis_id"]},
+                    {"$inc": {"downloads_count": 1}}
+                )
+        
+        return {"status": "success"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error handling Stripe webhook: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
+
 # Include the router in the main app
 app.include_router(api_router)
 
