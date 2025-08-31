@@ -34,6 +34,9 @@ stripe_checkout = None
 if STRIPE_API_KEY:
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
 
+# Initialize import scheduler
+import_scheduler = None
+
 # Thesis pricing packages
 THESIS_PACKAGES = {
     "standard": {"price": 5.0, "currency": "eur", "name": "Accès Standard"},
