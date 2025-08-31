@@ -554,7 +554,20 @@ async def get_university_rankings(
         logging.error(f"Error getting university rankings: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.get("/stats")
+@api_router.get("/stats",
+    summary="Statistiques générales",
+    description="""
+    Statistiques générales de la plateforme.
+    
+    Fournit un aperçu des données disponibles :
+    - Nombre total de thèses
+    - Répartition par type d'accès (libre/payant)
+    - Top 10 des disciplines
+    - Top 10 des pays
+    
+    Utile pour des analyses et visualisations de données.
+    """
+)
 async def get_statistics():
     """Get general statistics"""
     try:
