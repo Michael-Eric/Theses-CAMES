@@ -1,0 +1,68 @@
+<analysis>
+The AI engineer successfully built the  application using a React frontend, FastAPI backend, and MongoDB. The project progressed from an MVP focusing on core thesis search, consultation, and Stripe payment integration, to implementing advanced features like HAL/Greenstone data import, a complete JWT-based authentication system, public API with Swagger documentation, and basic SEO. The database was significantly enriched with authentic CAMES thesis data. The most recent task involves transitioning the author and university ranking system from citations to weekly consultations. The engineer has updated the backend logic for tracking views and ranking calculations, and the frontend to reflect these changes. The current state is poised for testing the newly implemented view-based ranking system.
+</analysis>
+
+<product_requirements>
+The goal is to create , a platform for centralized PhD thesis consultation for CAMES member countries, offering open or paid access. Key features include: FR/EN localization, a sober/academic/mobile-first design with light/dark themes, SEO, accessibility, and high performance. User roles encompass Visitors, Authors/Universities, and Admins. The system manages Thesis, Person, Institution, Order, and Metrics data models. Core functionalities include comprehensive thesis search with multiple filters (country, discipline, year, access type, university), a detailed thesis page (with PDF viewer or purchase option), and ranking systems for authors and universities. Payments are to be integrated with Stripe, Paystack, and Flutterwave. Data ingestion relies on connectors for HAL, Greenstone CAMES, and other open-access sources, with scheduled imports and deduplication. Admin features cover CRUD operations, payment settings, and import management. The initial MVP prioritized search/consultation, payment, import architecture, and rankings, all of which have been substantially developed. The latest request is to change rankings from citations to weekly views and to enhance the thesis database.
+</product_requirements>
+
+<key_technical_concepts>
+-   **Full-Stack:** React (Frontend), FastAPI (Backend), MongoDB (Database).
+-   **UI/UX:** Shadcn UI, Tailwind CSS, responsive design.
+-   **Data Management:** Pydantic models for validation, UUIDs for IDs, MongoDB collections.
+-   **API:** RESTful endpoints,  for client,  prefix for Kubernetes.
+-   **Authentication:** JWT, , custom user models.
+-   **Integrations:** Stripe (payment),  for 3rd party APIs, Python  for tasks.
+</key_technical_concepts>
+
+<code_architecture>
+
+
+-   :
+    -   **Importance:** The core of the FastAPI backend, orchestrating API endpoints, database interactions, Pydantic models for various entities (Thesis, User, Order, Metrics, WeeklyView), CORS handling, Stripe payment processing, data import scheduling, authentication routing, and SEO-related routes (sitemap, robots.txt).
+    -   **Changes:** Started with basic CRUD for theses and statistics. Expanded to integrate Stripe payment endpoints (), admin import endpoints (), authentication routes (), ranking endpoints (), and SEO routes. Most recently, it was updated to track  for each thesis and adjusted ranking logic for authors and universities to use these view counts.
+-   :
+    -   **Importance:** The main React component, managing application routing (), rendering the thesis catalog, search filters, thesis detail view, payment flow, and user authentication UI (login/register modals). It leverages Shadcn UI components for a modern look.
+    -   **Changes:** Initially set up the main layout, search bar, and thesis display. Integrated payment buttons and the  page. Added authentication UI and context. Introduced the  filter to the search interface. Updated display texts related to rankings and modified the  function to reflect weekly consultation counts instead of citations.
+-   :
+    -   **Importance:** This directory encapsulates the logic for ingesting and processing thesis data from external sources and scheduling these import operations. It ensures data diversity and consistency.
+    -   **Changes:** Contains  for OAI-PMH,  for scraping Greenstone, and  for specific CAMES thesis data.  was created to manage the execution of these import jobs.
+-   :
+    -   **Importance:** This module handles all aspects of user authentication, including defining user data models, securely hashing passwords, generating and validating JWT tokens for session management, and exposing API endpoints for user registration and login.
+    -   **Changes:** Created  for  and  Pydantic models,  for password hashing () and JWT utilities, and  for API endpoints like , , and .
+</code_architecture>
+
+<pending_tasks>
+-   Implement Paystack and Flutterwave payment integrations.
+-   Expand internationalization beyond FR (full EN support).
+-   Develop detailed Admin CRUD functionalities and moderation tools.
+-   Create comprehensive Author/University profile pages.
+-   Integrate SSO options (Google/Microsoft).
+-   Implement advanced SEO features (schema.org, OpenGraph/Twitter cards).
+-   Integrate a dedicated PDF reader for open-access theses.
+-   Implement secure protected PDF access for paywalled content (token, expiring links).
+</pending_tasks>
+
+<current_work>
+The AI engineer is actively working on a significant update to the ranking system. Previously, authors and universities were ranked based on citations. This is now being changed to weekly consultations to reflect online view counts more accurately.
+
+On the **backend** ():
+1.  A new MongoDB collection  has been introduced, and a  Pydantic model defined, to track individual thesis views on a weekly basis.
+2.  Utility functions like  have been added to manage weekly tracking.
+3.  The  endpoint was modified to increment the  count whenever a thesis is accessed, ensuring real-time tracking.
+4.  The  and  endpoints have been updated to query the  collection, aggregate data, and rank entities based on these new consultation metrics. A  function was also added.
+
+On the **frontend** ():
+1.  Text labels across the UI, particularly in ranking sections and thesis cards, have been changed from citations to consultations or vues to align with the new metric.
+2.  The  function, responsible for displaying star ratings for authors/universities, has been updated to use the  data and new thresholds for calculating star levels.
+
+The backend services have been restarted, and the AI engineer is now at the stage of simulating thesis views to generate test data for the new weekly view tracking and ranking system.
+</current_work>
+
+<optional_next_step>
+Simulate thesis views to generate weekly view data and verify the new author and university rankings display correctly based on this data on the frontend.
+</optional_next_step>
+
+<direct_quotes>
+Maintenant simulons quelques consultations sur les thèses pour générer des vues hebdomadaires (Chat Message 311).
+</direct_quotes>

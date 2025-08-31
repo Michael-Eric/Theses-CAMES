@@ -89,7 +89,7 @@ app = FastAPI(
     },
     servers=[
         {
-            "url": "https://theses-cames.preview.emergentagent.com/api",
+            "url": "https://scholarly-views.preview.emergentagent.com/api",
             "description": "Serveur de production"
         }
     ],
@@ -1006,7 +1006,7 @@ async def generate_sitemap():
         urlset = ET.Element("urlset")
         urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
         
-        base_url = "https://theses-cames.preview.emergentagent.com"
+        base_url = "https://scholarly-views.preview.emergentagent.com"
         
         # Add homepage
         url_elem = ET.SubElement(urlset, "url")
@@ -1077,7 +1077,7 @@ Disallow: /api/checkout/
 Disallow: /api/webhook/
 
 # Sitemap location
-Sitemap: https://theses-cames.preview.emergentagent.com/api/sitemap.xml
+Sitemap: https://scholarly-views.preview.emergentagent.com/api/sitemap.xml
 
 # Crawl delay (be respectful)
 Crawl-delay: 1
