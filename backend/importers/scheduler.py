@@ -26,6 +26,7 @@ class ImportScheduler:
         self.db = db
         self.hal_connector = HALConnector(db)
         self.greenstone_connector = GreenstoneConnector(db)
+        self.enhanced_connector = EnhancedThesesConnector(db)
         self.running = False
         self.scheduler_thread = None
         
