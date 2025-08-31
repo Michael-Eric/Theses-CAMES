@@ -237,12 +237,16 @@ class CheckoutRequest(BaseModel):
     thesis_id: str
     origin_url: str
 
-class WebhookEvent(BaseModel):
-    event_type: str
-    event_id: str
-    session_id: str
-    payment_status: str
-    metadata: Dict[str, str]
+class WeeklyViewsLog(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    thesis_id: str
+    week_start: str  # Format: "2025-W35" (année-semaine)
+    views_count: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class WeeklyViewsCreate(BaseModel):
+    thesis_id: str
+    week_start: str
 
 class AuthorRanking(BaseModel):
     author_name: str
