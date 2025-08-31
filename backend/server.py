@@ -479,17 +479,191 @@ async def get_statistics():
         logging.error(f"Error getting statistics: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.post("/orders", response_model=Order)
-async def create_order(order_data: dict):
-    """Create a payment order"""
+@api_router.post("/checkout/session")
+async def create_checkout_session(request: CheckoutRequest):
+    """Create a payment checkout session for thesis access"""
+    global stripe_checkout
     try:
-        order = Order(**order_data)
-        order_dict = prepare_for_mongo(order.dict())
-        await db.orders.insert_one(order_dict)
-        return order
+        if not stripe_checkout:
+            raise HTTPException(status_code=500, detail="Payment system not configured")
+        
+        # Get thesis information
+        thesis = await db.theses.find_one({"id": request.thesis_id})
+        if not thesis:
+            raise HTTPException(status_code=404, detail="Thesis not found")
+        
+        # Check if thesis is already open access
+        if thesis.get("access_type") == "open":
+            raise HTTPException(status_code=400, detail="This thesis is already freely accessible")
+        
+        # Use standard package for thesis access
+        package = THESIS_PACKAGES["standard"]
+        amount = package["price"]
+        currency = package["currency"]
+        
+        # Create success and cancel URLs
+        success_url = f"{request.origin_url}/purchase-success?session_id={{CHECKOUT_SESSION_ID}}&thesis_id={request.thesis_id}"
+        cancel_url = f"{request.origin_url}/?canceled=true"
+        
+        # Update stripe checkout webhook URL
+        webhook_url = f"{request.origin_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Create checkout session request
+        checkout_request = CheckoutSessionRequest(
+            amount=amount,
+            currency=currency,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "thesis_id": request.thesis_id,
+                "package": "standard",
+                "source": "theses_cames"
+            }
+        )
+        
+        # Create session with Stripe
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record
+        transaction = PaymentTransaction(
+            thesis_id=request.thesis_id,
+            amount=amount,
+            currency=currency,
+            session_id=session.session_id,
+            metadata=checkout_request.metadata,
+            status="initiated",
+            payment_status="pending"
+        )
+        
+        # Save transaction to database
+        transaction_dict = prepare_for_mongo(transaction.dict())
+        await db.payment_transactions.insert_one(transaction_dict)
+        
+        return {
+            "url": session.url,
+            "session_id": session.session_id,
+            "amount": amount,
+            "currency": currency
+        }
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        logging.error(f"Error creating order: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logging.error(f"Error creating checkout session: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/checkout/status/{session_id}")
+async def get_checkout_status(session_id: str):
+    """Check the status of a payment checkout session"""
+    try:
+        if not stripe_checkout:
+            raise HTTPException(status_code=500, detail="Payment system not configured")
+        
+        # Get status from Stripe
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Find transaction in database
+        transaction = await db.payment_transactions.find_one({"session_id": session_id})
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Update transaction status if payment is completed and not already processed
+        if (checkout_status.payment_status == "paid" and 
+            transaction.get("payment_status") != "paid"):
+            
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {
+                    "$set": {
+                        "status": "completed",
+                        "payment_status": "paid",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            # Grant access to thesis (you could add logic here to create access tokens, etc.)
+            await db.theses.update_one(
+                {"id": transaction["thesis_id"]},
+                {"$inc": {"downloads_count": 1}}
+            )
+        
+        elif checkout_status.status == "expired":
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {
+                    "$set": {
+                        "status": "expired",
+                        "payment_status": "expired",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency,
+            "metadata": checkout_status.metadata,
+            "thesis_id": transaction.get("thesis_id")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error checking checkout status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to check payment status")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    try:
+        if not stripe_checkout:
+            raise HTTPException(status_code=500, detail="Payment system not configured")
+        
+        # Get request body and signature
+        request_body = await request.body()
+        stripe_signature = request.headers.get("Stripe-Signature")
+        
+        if not stripe_signature:
+            raise HTTPException(status_code=400, detail="Missing Stripe signature")
+        
+        # Handle webhook
+        webhook_response = await stripe_checkout.handle_webhook(request_body, stripe_signature)
+        
+        # Process the webhook event
+        if webhook_response.event_type == "checkout.session.completed":
+            session_id = webhook_response.session_id
+            
+            # Update transaction status
+            await db.payment_transactions.update_one(
+                {"session_id": session_id, "payment_status": {"$ne": "paid"}},
+                {
+                    "$set": {
+                        "status": "completed",
+                        "payment_status": "paid",
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            # Get transaction to update thesis
+            transaction = await db.payment_transactions.find_one({"session_id": session_id})
+            if transaction:
+                await db.theses.update_one(
+                    {"id": transaction["thesis_id"]},
+                    {"$inc": {"downloads_count": 1}}
+                )
+        
+        return {"status": "success"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error handling Stripe webhook: {e}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
 
 # Include the router in the main app
 app.include_router(api_router)
