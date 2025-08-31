@@ -649,6 +649,7 @@ const Rankings = () => {
 
 // Purchase Success Component
 const PurchaseSuccess = () => {
+  const { t } = useTranslation();
   const [paymentStatus, setPaymentStatus] = useState('checking');
   const [thesisId, setThesisId] = useState(null);
   const [sessionId, setSessionId] = useState(null);
