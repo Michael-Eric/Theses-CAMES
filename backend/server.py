@@ -932,7 +932,8 @@ async def generate_sitemap():
 @app.get("/robots.txt", 
     response_class=Response,
     summary="Fichier robots.txt",
-    description="Instructions pour les robots des moteurs de recherche"
+    description="Instructions pour les robots des moteurs de recherche",
+    include_in_schema=False
 )
 async def robots_txt():
     """Generate robots.txt for search engine crawlers"""
