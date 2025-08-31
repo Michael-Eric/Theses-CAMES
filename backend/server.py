@@ -48,7 +48,51 @@ THESIS_PACKAGES = {
 }
 
 # Create the main app without a prefix
-app = FastAPI(title="Thèses CAMES API", version="1.0.0")
+app = FastAPI(
+    title="Thèses CAMES API",
+    version="1.0.0",
+    description="""
+    ## API publique pour la plateforme Thèses CAMES
+    
+    Cette API permet d'accéder aux métadonnées des thèses de doctorat des pays membres du CAMES.
+    
+    ### Fonctionnalités principales :
+    - **Recherche avancée** de thèses avec filtres multiples
+    - **Consultation des métadonnées** complètes
+    - **Classements** des auteurs et universités
+    - **Statistiques** générales de la plateforme
+    - **Authentification** pour fonctionnalités avancées
+    - **Système de paiement** pour l'accès aux thèses payantes
+    
+    ### Sources de données :
+    - HAL (Hyper Articles en Ligne)
+    - Greenstone CAMES
+    - Autres dépôts institutionnels
+    
+    ### Accès :
+    - Consultation publique gratuite des métadonnées
+    - Accès aux contenus selon les licences (libre ou payant)
+    - API RESTful avec pagination et filtres
+    
+    ### Support :
+    Pour toute question ou assistance, contactez notre équipe de support.
+    """,
+    contact={
+        "name": "Équipe Thèses CAMES",
+        "url": "https://thesescames.org/contact",
+        "email": "support@thesescames.org",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    servers=[
+        {
+            "url": "https://theses-cames.preview.emergentagent.com/api",
+            "description": "Serveur de production"
+        }
+    ]
+)
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
