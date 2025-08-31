@@ -90,11 +90,13 @@ const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
 
 // Thesis Card Component
 const ThesisCard = ({ thesis, onClick }) => {
+  const { t } = useTranslation();
+  
   const getAccessBadge = () => {
     if (thesis.access_type === 'open') {
-      return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">Accès libre</Badge>;
+      return <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">{t('thesis.openAccess')}</Badge>;
     } else {
-      return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-100">Payant</Badge>;
+      return <Badge variant="secondary" className="bg-orange-100 text-orange-800 hover:bg-orange-100">{t('thesis.paywall')}</Badge>;
     }
   };
 
