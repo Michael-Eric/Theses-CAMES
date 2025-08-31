@@ -111,10 +111,19 @@ class ImportScheduler:
                 logger.error(f"Greenstone import failed: {e}")
                 import_stats["greenstone_stats"]["errors"] += 1
             
+            # Import from Enhanced Connector (CAMES specific)
+            logger.info("Starting Enhanced CAMES import...")
+            try:
+                import_stats["enhanced_stats"] = await self.enhanced_connector.import_comprehensive_theses()
+            except Exception as e:
+                logger.error(f"Enhanced import failed: {e}")
+                import_stats["enhanced_stats"]["errors"] += 1
+            
             # Calculate totals
             import_stats["total_imported"] = (
                 import_stats["hal_stats"]["imported"] + 
-                import_stats["greenstone_stats"]["imported"]
+                import_stats["greenstone_stats"]["imported"] +
+                import_stats["enhanced_stats"]["imported"]
             )
             
             import_stats["completed_at"] = datetime.now(timezone.utc).isoformat()
