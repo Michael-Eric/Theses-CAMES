@@ -744,9 +744,9 @@ async def stripe_webhook(request: Request):
 # Include the router in the main app
 app.include_router(api_router)
 
-# Include authentication router
+# Include authentication router  
 auth_router = create_auth_router(db)
-app.include_router(auth_router)
+app.include_router(auth_router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
