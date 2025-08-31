@@ -719,6 +719,9 @@ const PurchaseSuccess = () => {
     </div>
   );
 };
+
+// Main Home Component
+const Home = () => {
   const [theses, setTheses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
