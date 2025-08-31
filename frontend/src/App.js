@@ -994,14 +994,14 @@ const Home = () => {
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     >
-                      Précédent
+                      {t('common.previous')}
                     </Button>
                     <Button
                       variant="outline"
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     >
-                      Suivant
+                      {t('common.next')}
                     </Button>
                   </div>
                 )}
