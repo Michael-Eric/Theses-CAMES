@@ -754,8 +754,15 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database with sample data"""
+    """Initialize database with sample data and start import scheduler"""
+    global import_scheduler
+    
     try:
+        # Initialize import scheduler
+        import_scheduler = ImportScheduler(db)
+        import_scheduler.start()
+        logger.info("Import scheduler initialized and started")
+        
         # Check if we already have data
         count = await db.theses.count_documents({})
         if count == 0:
