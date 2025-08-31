@@ -244,6 +244,206 @@ class ThesesCAMESAPITester:
             self.log_test("Checkout Session Creation", False, f"Error: {str(e)}")
             return False
 
+    def test_swagger_documentation(self):
+        """Test Swagger documentation endpoint"""
+        try:
+            response = requests.get(f"{self.api_url}/docs", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                # Check if it's HTML content (Swagger UI)
+                content_type = response.headers.get('content-type', '')
+                if 'text/html' in content_type:
+                    details += ", Swagger UI loaded"
+                else:
+                    success = False
+                    details += f", Unexpected content type: {content_type}"
+                    
+            self.log_test("Swagger Documentation", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Swagger Documentation", False, f"Error: {str(e)}")
+            return False
+
+    def test_openapi_spec(self):
+        """Test OpenAPI specification"""
+        try:
+            response = requests.get(f"{self.api_url}/openapi.json", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                try:
+                    spec = response.json()
+                    if 'openapi' in spec and 'info' in spec:
+                        details += f", OpenAPI version: {spec.get('openapi')}"
+                    else:
+                        success = False
+                        details += ", Invalid OpenAPI spec"
+                except:
+                    success = False
+                    details += ", Invalid JSON response"
+                    
+            self.log_test("OpenAPI Specification", success, details)
+            return success
+        except Exception as e:
+            self.log_test("OpenAPI Specification", False, f"Error: {str(e)}")
+            return False
+
+    def test_seo_endpoints(self):
+        """Test SEO optimization endpoints"""
+        try:
+            # Test sitemap.xml
+            response = requests.get(f"{self.api_url}/sitemap.xml", timeout=10)
+            sitemap_success = response.status_code == 200
+            sitemap_details = f"Status: {response.status_code}"
+            
+            if sitemap_success:
+                content_type = response.headers.get('content-type', '')
+                if 'xml' in content_type:
+                    sitemap_details += ", XML sitemap generated"
+                else:
+                    sitemap_success = False
+                    sitemap_details += f", Unexpected content type: {content_type}"
+                    
+            self.log_test("Sitemap XML", sitemap_success, sitemap_details)
+            
+            # Test robots.txt
+            response = requests.get(f"{self.api_url}/robots.txt", timeout=10)
+            robots_success = response.status_code == 200
+            robots_details = f"Status: {response.status_code}"
+            
+            if robots_success:
+                content = response.text
+                if 'User-agent:' in content and 'Sitemap:' in content:
+                    robots_details += ", Valid robots.txt"
+                else:
+                    robots_success = False
+                    robots_details += ", Invalid robots.txt format"
+                    
+            self.log_test("Robots.txt", robots_success, robots_details)
+            
+            return sitemap_success and robots_success
+        except Exception as e:
+            self.log_test("SEO Endpoints", False, f"Error: {str(e)}")
+            return False
+
+    def test_thesis_metadata(self):
+        """Test thesis structured metadata endpoint"""
+        try:
+            # First get a thesis ID
+            response = requests.get(f"{self.api_url}/theses?limit=1", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Thesis Metadata", False, "Could not get thesis list")
+                return False
+                
+            data = response.json()
+            if not data['results']:
+                self.log_test("Thesis Metadata", False, "No theses found")
+                return False
+                
+            thesis_id = data['results'][0]['id']
+            
+            # Test metadata endpoint
+            response = requests.get(f"{self.api_url}/thesis/{thesis_id}/metadata", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                metadata = response.json()
+                if 'structured_data' in metadata and '@context' in metadata['structured_data']:
+                    details += ", Schema.org structured data found"
+                else:
+                    success = False
+                    details += ", Missing structured data"
+                    
+            self.log_test("Thesis Structured Metadata", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Thesis Metadata", False, f"Error: {str(e)}")
+            return False
+
+    def test_authentication_endpoints(self):
+        """Test authentication system"""
+        try:
+            # Test registration endpoint exists
+            test_user = {
+                "email": f"test_{int(datetime.now().timestamp())}@example.com",
+                "password": "TestPassword123!",
+                "full_name": "Test User",
+                "role": "visitor"
+            }
+            
+            response = requests.post(f"{self.api_url}/auth/register", json=test_user, timeout=10)
+            reg_success = response.status_code in [200, 201, 400, 422]  # Accept various responses
+            reg_details = f"Status: {response.status_code}"
+            
+            if response.status_code in [200, 201]:
+                reg_details += ", Registration successful"
+            elif response.status_code in [400, 422]:
+                reg_details += ", Registration endpoint working (validation error expected)"
+            else:
+                reg_success = False
+                
+            self.log_test("Authentication Registration", reg_success, reg_details)
+            
+            # Test login endpoint
+            login_data = {
+                "email": "test@example.com",
+                "password": "motdepasse123"
+            }
+            
+            response = requests.post(f"{self.api_url}/auth/login", json=login_data, timeout=10)
+            login_success = response.status_code in [200, 401, 422]  # Accept various responses
+            login_details = f"Status: {response.status_code}"
+            
+            if response.status_code == 200:
+                login_details += ", Login successful"
+            elif response.status_code in [401, 422]:
+                login_details += ", Login endpoint working (auth error expected)"
+            else:
+                login_success = False
+                
+            self.log_test("Authentication Login", login_success, login_details)
+            
+            return reg_success and login_success
+        except Exception as e:
+            self.log_test("Authentication Endpoints", False, f"Error: {str(e)}")
+            return False
+
+    def test_import_system(self):
+        """Test import system endpoints"""
+        try:
+            # Test import status
+            response = requests.get(f"{self.api_url}/admin/import/status", timeout=10)
+            status_success = response.status_code == 200
+            status_details = f"Status: {response.status_code}"
+            
+            if status_success:
+                data = response.json()
+                if 'thesis_counts' in data:
+                    status_details += f", Total theses: {data['thesis_counts'].get('total', 0)}"
+                    
+            self.log_test("Import System Status", status_success, status_details)
+            
+            # Test import history
+            response = requests.get(f"{self.api_url}/admin/import/history", timeout=10)
+            history_success = response.status_code == 200
+            history_details = f"Status: {response.status_code}"
+            
+            if history_success:
+                data = response.json()
+                if 'import_jobs' in data:
+                    history_details += f", Import jobs: {len(data['import_jobs'])}"
+                    
+            self.log_test("Import System History", history_success, history_details)
+            
+            return status_success and history_success
+        except Exception as e:
+            self.log_test("Import System", False, f"Error: {str(e)}")
+            return False
+
     def test_filters_and_search(self):
         """Test various filter combinations"""
         try:
