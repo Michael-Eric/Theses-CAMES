@@ -665,6 +665,10 @@ async def get_import_status():
         # Check last import job
         last_job = await db.import_jobs.find_one({}, sort=[("started_at", -1)])
         
+        # Convert ObjectId to string for JSON serialization
+        if last_job and "_id" in last_job:
+            last_job["_id"] = str(last_job["_id"])
+        
         # Get total imported theses by source
         hal_count = await db.theses.count_documents({"source_repo": "HAL"})
         greenstone_count = await db.theses.count_documents({"source_repo": "Greenstone"})
