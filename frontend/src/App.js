@@ -181,6 +181,9 @@ const ThesisCard = ({ thesis, onClick }) => {
 
 // Thesis Detail Modal Component
 const ThesisDetailModal = ({ thesis, onClose, onPurchase }) => {
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+
   if (!thesis) return null;
 
   const getStars = (count) => {
@@ -200,168 +203,201 @@ const ThesisDetailModal = ({ thesis, onClose, onPurchase }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 pr-4">{thesis.title}</h2>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              ✕
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Résumé</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {thesis.abstract}
-                </p>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Mots-clés</h3>
-                <div className="flex flex-wrap gap-2">
-                  {thesis.keywords.map((keyword, index) => (
-                    <Badge key={index} variant="secondary">
-                      {keyword}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Statistiques</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <Eye className="w-6 h-6 mx-auto mb-1 text-blue-600" />
-                    <div className="font-semibold">{thesis.views_count}</div>
-                    <div className="text-xs text-gray-500">Vues</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <Download className="w-6 h-6 mx-auto mb-1 text-green-600" />
-                    <div className="font-semibold">{thesis.downloads_count}</div>
-                    <div className="text-xs text-gray-500">Téléchargements</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <Award className="w-6 h-6 mx-auto mb-1 text-yellow-600" />
-                    <div className="font-semibold">{thesis.site_citations_count}</div>
-                    <div className="text-xs text-gray-500">Citations</div>
-                  </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <div className="flex justify-center mb-1">
-                      {getStars(thesis.site_citations_count)}
-                    </div>
-                    <div className="text-xs text-gray-500">Évaluation</div>
-                  </div>
-                </div>
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 pr-4">{thesis.title}</h2>
+              <div className="flex items-center space-x-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setShowClaimModal(true)}>
+                      <UserCheck className="w-4 h-4 mr-2" />
+                      Revendiquer cette thèse
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setShowReportModal(true)}>
+                      <Flag className="w-4 h-4 mr-2" />
+                      Signaler un problème
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={onClose}>
+                  ✕
+                </Button>
               </div>
             </div>
 
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Informations</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-gray-900">Auteur</h4>
-                    <p className="text-gray-600">{thesis.author_name}</p>
-                    {thesis.author_orcid && (
-                      <p className="text-xs text-gray-500">ORCID: {thesis.author_orcid}</p>
-                    )}
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Résumé</h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {thesis.abstract}
+                  </p>
+                </div>
 
-                  <div>
-                    <h4 className="font-medium text-gray-900">Directeurs de thèse</h4>
-                    {thesis.supervisor_names.map((supervisor, index) => (
-                      <p key={index} className="text-gray-600">{supervisor}</p>
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Mots-clés</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {thesis.keywords.map((keyword, index) => (
+                      <Badge key={index} variant="secondary">
+                        {keyword}
+                      </Badge>
                     ))}
                   </div>
+                </div>
 
-                  <div>
-                    <h4 className="font-medium text-gray-900">Université</h4>
-                    <p className="text-gray-600">{thesis.university}</p>
-                    <p className="text-sm text-gray-500">{thesis.country}</p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900">Discipline</h4>
-                    <p className="text-gray-600">{thesis.discipline}</p>
-                    {thesis.sub_discipline && (
-                      <p className="text-sm text-gray-500">{thesis.sub_discipline}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium text-gray-900">Soutenance</h4>
-                    <p className="text-gray-600">{thesis.defense_date}</p>
-                  </div>
-
-                  {thesis.pages && (
-                    <div>
-                      <h4 className="font-medium text-gray-900">Pages</h4>
-                      <p className="text-gray-600">{thesis.pages} pages</p>
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Statistiques</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <Eye className="w-6 h-6 mx-auto mb-1 text-blue-600" />
+                      <div className="font-semibold">{thesis.views_count}</div>
+                      <div className="text-xs text-gray-500">Vues</div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Accès au document</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {thesis.access_type === 'open' ? (
-                    <div className="space-y-3">
-                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        Accès libre
-                      </Badge>
-                      <div className="space-y-2">
-                        {thesis.url_open_access && (
-                          <Button className="w-full" size="sm">
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Consulter en ligne
-                          </Button>
-                        )}
-                        <Button variant="outline" className="w-full" size="sm">
-                          <Download className="w-4 h-4 mr-2" />
-                          Télécharger
-                        </Button>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <Download className="w-6 h-6 mx-auto mb-1 text-green-600" />
+                      <div className="font-semibold">{thesis.downloads_count}</div>
+                      <div className="text-xs text-gray-500">Téléchargements</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <Award className="w-6 h-6 mx-auto mb-1 text-yellow-600" />
+                      <div className="font-semibold">{thesis.site_citations_count}</div>
+                      <div className="text-xs text-gray-500">Citations</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="flex justify-center mb-1">
+                        {getStars(thesis.site_citations_count)}
                       </div>
-                      {thesis.source_url && (
-                        <div className="pt-2 border-t">
-                          <p className="text-xs text-gray-500 mb-1">Source:</p>
-                          <Button variant="link" className="h-auto p-0 text-xs">
-                            {thesis.source_repo} - Lien original
-                          </Button>
-                        </div>
+                      <div className="text-xs text-gray-500">Évaluation</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Informations</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900">Auteur</h4>
+                      <p className="text-gray-600">{thesis.author_name}</p>
+                      {thesis.author_orcid && (
+                        <p className="text-xs text-gray-500">ORCID: {thesis.author_orcid}</p>
                       )}
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
-                        Accès payant
-                      </Badge>
-                      <Button 
-                        className="w-full bg-orange-600 hover:bg-orange-700" 
-                        onClick={() => onPurchase(thesis)}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Acheter l'accès
-                      </Button>
-                      <p className="text-xs text-gray-500 text-center">
-                        Paiement sécurisé • Accès immédiat
-                      </p>
+
+                    <div>
+                      <h4 className="font-medium text-gray-900">Directeurs de thèse</h4>
+                      {thesis.supervisor_names.map((supervisor, index) => (
+                        <p key={index} className="text-gray-600">{supervisor}</p>
+                      ))}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
+
+                    <div>
+                      <h4 className="font-medium text-gray-900">Université</h4>
+                      <p className="text-gray-600">{thesis.university}</p>
+                      <p className="text-sm text-gray-500">{thesis.country}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium text-gray-900">Discipline</h4>
+                      <p className="text-gray-600">{thesis.discipline}</p>
+                      {thesis.sub_discipline && (
+                        <p className="text-sm text-gray-500">{thesis.sub_discipline}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium text-gray-900">Soutenance</h4>
+                      <p className="text-gray-600">{thesis.defense_date}</p>
+                    </div>
+
+                    {thesis.pages && (
+                      <div>
+                        <h4 className="font-medium text-gray-900">Pages</h4>
+                        <p className="text-gray-600">{thesis.pages} pages</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Accès au document</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {thesis.access_type === 'open' ? (
+                      <div className="space-y-3">
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                          Accès libre
+                        </Badge>
+                        <div className="space-y-2">
+                          {thesis.url_open_access && (
+                            <Button className="w-full" size="sm">
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Consulter en ligne
+                            </Button>
+                          )}
+                          <Button variant="outline" className="w-full" size="sm">
+                            <Download className="w-4 h-4 mr-2" />
+                            Télécharger
+                          </Button>
+                        </div>
+                        {thesis.source_url && (
+                          <div className="pt-2 border-t">
+                            <p className="text-xs text-gray-500 mb-1">Source:</p>
+                            <Button variant="link" className="h-auto p-0 text-xs">
+                              {thesis.source_repo} - Lien original
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+                          Accès payant
+                        </Badge>
+                        <Button 
+                          className="w-full bg-orange-600 hover:bg-orange-700" 
+                          onClick={() => onPurchase(thesis)}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Acheter l'accès
+                        </Button>
+                        <p className="text-xs text-gray-500 text-center">
+                          Paiement sécurisé • Accès immédiat
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <ThesisClaimModal 
+        isOpen={showClaimModal}
+        onClose={() => setShowClaimModal(false)}
+        thesis={thesis}
+      />
+
+      <ThesisReportModal 
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        thesis={thesis}
+      />
+    </>
   );
 };
 
