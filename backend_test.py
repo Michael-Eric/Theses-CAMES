@@ -177,7 +177,7 @@ class ThesesCAMESAPITester:
             return False, []
 
     def test_university_rankings(self):
-        """Test university rankings endpoint"""
+        """Test university rankings endpoint with weekly views aggregation"""
         try:
             response = requests.get(f"{self.api_url}/rankings/universities?limit=10", timeout=10)
             success = response.status_code == 200
@@ -188,22 +188,31 @@ class ThesesCAMESAPITester:
                 if isinstance(data, list):
                     details += f", Found {len(data)} universities"
                     if data:
-                        # Check first university has required fields
+                        # Check first university has required fields for weekly views
                         first_uni = data[0]
-                        required_fields = ['university_name', 'country', 'theses_count']
+                        required_fields = ['university_name', 'country', 'weekly_views', 'total_views', 'theses_count', 'top_authors', 'disciplines']
                         missing_fields = [field for field in required_fields if field not in first_uni]
                         if missing_fields:
                             success = False
                             details += f", Missing fields: {missing_fields}"
+                        else:
+                            weekly_views = first_uni.get('weekly_views', 0)
+                            total_views = first_uni.get('total_views', 0)
+                            details += f", Top university: {first_uni['university_name']}, Weekly views: {weekly_views}, Total views: {total_views}"
+                            
+                            # Verify weekly views are properly aggregated (should be >= 0)
+                            if weekly_views < 0:
+                                success = False
+                                details += f", Invalid weekly views: {weekly_views}"
                 else:
                     success = False
                     details += ", Response is not a list"
                     
-            self.log_test("University Rankings", success, details)
-            return success
+            self.log_test("University Rankings (Weekly Views)", success, details)
+            return success, data if success else []
         except Exception as e:
-            self.log_test("University Rankings", False, f"Error: {str(e)}")
-            return False
+            self.log_test("University Rankings (Weekly Views)", False, f"Error: {str(e)}")
+            return False, []
 
     def test_checkout_session_creation(self):
         """Test checkout session creation (will fail without valid thesis ID but should return proper error)"""
