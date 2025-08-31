@@ -246,7 +246,8 @@ class WebhookEvent(BaseModel):
 
 class AuthorRanking(BaseModel):
     author_name: str
-    citations_count: int
+    weekly_views: int
+    total_views: int
     stars: int
     theses_count: int
     disciplines: List[str]
@@ -254,7 +255,10 @@ class AuthorRanking(BaseModel):
 class UniversityRanking(BaseModel):
     university_name: str
     country: str
+    weekly_views: int
+    total_views: int
     theses_count: int
+    top_authors: List[str]
     disciplines: List[str]
 
 class SearchFilters(BaseModel):
