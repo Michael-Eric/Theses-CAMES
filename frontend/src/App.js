@@ -420,12 +420,12 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
 
         <div>
           <label className="text-sm font-medium mb-2 block">Année</label>
-          <Select value={filters.year || ''} onValueChange={(value) => onFilterChange('year', value || null)}>
+          <Select value={filters.year || 'all'} onValueChange={(value) => onFilterChange('year', value === 'all' ? null : value)}>
             <SelectTrigger>
               <SelectValue placeholder="Toutes années" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes années</SelectItem>
+              <SelectItem value="all">Toutes années</SelectItem>
               <SelectItem value="2023">2023</SelectItem>
               <SelectItem value="2022">2022</SelectItem>
               <SelectItem value="2021">2021</SelectItem>
