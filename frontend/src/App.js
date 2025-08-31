@@ -900,9 +900,9 @@ const Home = () => {
         />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Palmarès</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t('rankings.title')}</h1>
             <Button onClick={() => setShowRankings(false)} variant="outline">
-              Retour à la recherche
+              {t('rankings.backToSearch')}
             </Button>
           </div>
           <Rankings />
