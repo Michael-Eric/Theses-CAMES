@@ -78,6 +78,7 @@ class ImportScheduler:
             "started_at": datetime.now(timezone.utc).isoformat(),
             "hal_stats": {"processed": 0, "imported": 0, "duplicates": 0, "errors": 0},
             "greenstone_stats": {"processed": 0, "imported": 0, "duplicates": 0, "errors": 0},
+            "enhanced_stats": {"processed": 0, "imported": 0, "duplicates": 0, "errors": 0},
             "total_imported": 0,
             "completed_at": None,
             "status": "running"
