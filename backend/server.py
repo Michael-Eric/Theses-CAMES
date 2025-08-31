@@ -395,7 +395,17 @@ async def search_theses(
         logging.error(f"Error searching theses: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.get("/theses/{thesis_id}", response_model=Thesis)
+@api_router.get("/theses/{thesis_id}", 
+    response_model=Thesis,
+    summary="Consulter une thèse",
+    description="""
+    Récupérer les métadonnées complètes d'une thèse par son ID.
+    
+    Incrémente automatiquement le compteur de vues.
+    Retourne toutes les informations disponibles : auteur, directeurs,
+    université, résumé, mots-clés, statistiques, etc.
+    """
+)
 async def get_thesis(thesis_id: str):
     """Get thesis by ID and increment view count"""
     try:
