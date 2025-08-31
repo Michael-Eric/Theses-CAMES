@@ -946,6 +946,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/purchase-success" element={<PurchaseSuccess />} />
         </Routes>
       </BrowserRouter>
     </div>
