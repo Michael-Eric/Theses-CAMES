@@ -627,9 +627,29 @@ const Home = () => {
     setSelectedThesis(thesis);
   };
 
-  const handlePurchase = (thesis) => {
-    // Implement purchase logic here
-    alert('Fonctionnalité de paiement en cours de développement');
+  const handlePurchase = async (thesis) => {
+    try {
+      const originUrl = window.location.origin;
+      
+      const response = await axios.post(`${API}/checkout/session`, {
+        thesis_id: thesis.id,
+        origin_url: originUrl
+      });
+      
+      if (response.data.url) {
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url;
+      } else {
+        alert('Erreur lors de la création de la session de paiement');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      if (error.response?.status === 400) {
+        alert(error.response.data.detail || 'Cette thèse est déjà accessible gratuitement');
+      } else {
+        alert('Erreur lors de l\'initialisation du paiement. Veuillez réessayer.');
+      }
+    }
   };
 
   if (showRankings) {
