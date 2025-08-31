@@ -476,38 +476,70 @@ class ThesesCAMESAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🚀 Starting Thèses CAMES API Tests")
-        print("=" * 50)
+        print("🚀 Starting Comprehensive Thèses CAMES API Tests")
+        print("=" * 60)
         
         # Test basic connectivity
+        print("\n📋 CORE API TESTS")
         if not self.test_api_root():
             print("❌ API is not accessible, stopping tests")
             return False
             
-        # Test core endpoints
+        # Test documentation endpoints
+        print("\n📚 DOCUMENTATION TESTS")
+        self.test_swagger_documentation()
+        self.test_openapi_spec()
+        
+        # Test core data endpoints
+        print("\n🔍 DATA RETRIEVAL TESTS")
         self.test_get_stats()
         self.test_search_theses()
         self.test_get_thesis_by_id()
+        
+        # Test rankings
+        print("\n🏆 RANKINGS TESTS")
         self.test_author_rankings()
         self.test_university_rankings()
         
-        # Test advanced features
+        # Test advanced search features
+        print("\n🔎 ADVANCED SEARCH TESTS")
         self.test_filters_and_search()
+        
+        # Test authentication system
+        print("\n🔐 AUTHENTICATION TESTS")
+        self.test_authentication_endpoints()
+        
+        # Test payment system
+        print("\n💳 PAYMENT SYSTEM TESTS")
         self.test_checkout_session_creation()
         
+        # Test import system
+        print("\n📥 IMPORT SYSTEM TESTS")
+        self.test_import_system()
+        
+        # Test SEO endpoints
+        print("\n🔍 SEO OPTIMIZATION TESTS")
+        self.test_seo_endpoints()
+        self.test_thesis_metadata()
+        
         # Print summary
-        print("\n" + "=" * 50)
-        print(f"📊 Test Summary: {self.tests_passed}/{self.tests_run} tests passed")
+        print("\n" + "=" * 60)
+        print("📊 FINAL TEST RESULTS")
+        print("=" * 60)
+        print(f"✅ Tests passed: {self.tests_passed}/{self.tests_run}")
+        print(f"❌ Tests failed: {self.tests_run - self.tests_passed}/{self.tests_run}")
         
         if self.tests_passed == self.tests_run:
-            print("🎉 All tests passed!")
+            print("🎉 All tests passed! API is fully functional.")
             return True
         else:
-            print("⚠️  Some tests failed. Check the details above.")
+            print("⚠️  Some tests failed. Details:")
             failed_tests = [test for test in self.test_results if not test['success']]
-            print("\nFailed tests:")
             for test in failed_tests:
-                print(f"  - {test['name']}: {test['details']}")
+                print(f"   • {test['name']}: {test['details']}")
+            
+            success_rate = (self.tests_passed / self.tests_run) * 100
+            print(f"\n📈 Success rate: {success_rate:.1f}%")
             return False
 
 def main():
