@@ -412,22 +412,24 @@ const ThesisDetailModal = ({ thesis, onClose, onPurchase }) => {
 
 // Filter Panel Component
 const FilterPanel = ({ filters, onFilterChange, stats }) => {
+  const { t } = useTranslation();
+  
   return (
     <Card className="p-4">
       <div className="flex items-center mb-4">
         <Filter className="w-4 h-4 mr-2" />
-        <h3 className="font-semibold">Filtres</h3>
+        <h3 className="font-semibold">{t('search.filters')}</h3>
       </div>
       
       <div className="space-y-4">
         <div>
-          <label className="text-sm font-medium mb-2 block">Pays</label>
+          <label className="text-sm font-medium mb-2 block">{t('search.country', 'Pays')}</label>
           <Select value={filters.country || 'all'} onValueChange={(value) => onFilterChange('country', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Tous les pays" />
+              <SelectValue placeholder={t('search.allCountries')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les pays</SelectItem>
+              <SelectItem value="all">{t('search.allCountries')}</SelectItem>
               {stats?.top_countries?.map((country) => (
                 <SelectItem key={country.name} value={country.name}>
                   {country.name} ({country.count})
@@ -438,13 +440,13 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Discipline</label>
+          <label className="text-sm font-medium mb-2 block">{t('thesis.discipline')}</label>
           <Select value={filters.discipline || 'all'} onValueChange={(value) => onFilterChange('discipline', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Toutes disciplines" />
+              <SelectValue placeholder={t('search.allDisciplines')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes disciplines</SelectItem>
+              <SelectItem value="all">{t('search.allDisciplines')}</SelectItem>
               {stats?.top_disciplines?.map((discipline) => (
                 <SelectItem key={discipline.name} value={discipline.name}>
                   {discipline.name} ({discipline.count})
@@ -455,13 +457,13 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Université</label>
+          <label className="text-sm font-medium mb-2 block">{t('thesis.university')}</label>
           <Select value={filters.university || 'all'} onValueChange={(value) => onFilterChange('university', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Toutes universités" />
+              <SelectValue placeholder={t('search.allUniversities')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes universités</SelectItem>
+              <SelectItem value="all">{t('search.allUniversities')}</SelectItem>
               {stats?.top_universities?.map((university) => (
                 <SelectItem key={university.name} value={university.name}>
                   {university.name} ({university.count})
@@ -472,27 +474,27 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Type d'accès</label>
+          <label className="text-sm font-medium mb-2 block">{t('search.accessType', 'Type d\'accès')}</label>
           <Select value={filters.access_type || 'all'} onValueChange={(value) => onFilterChange('access_type', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Tous types" />
+              <SelectValue placeholder={t('search.allTypes')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous types</SelectItem>
-              <SelectItem value="open">Accès libre</SelectItem>
-              <SelectItem value="paywalled">Payant</SelectItem>
+              <SelectItem value="all">{t('search.allTypes')}</SelectItem>
+              <SelectItem value="open">{t('search.openAccess')}</SelectItem>
+              <SelectItem value="paywalled">{t('search.paywall')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Année</label>
+          <label className="text-sm font-medium mb-2 block">{t('search.year', 'Année')}</label>
           <Select value={filters.year || 'all'} onValueChange={(value) => onFilterChange('year', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Toutes années" />
+              <SelectValue placeholder={t('search.allYears')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes années</SelectItem>
+              <SelectItem value="all">{t('search.allYears')}</SelectItem>
               <SelectItem value="2023">2023</SelectItem>
               <SelectItem value="2022">2022</SelectItem>
               <SelectItem value="2021">2021</SelectItem>
