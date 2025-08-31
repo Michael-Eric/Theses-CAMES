@@ -12,9 +12,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Separator } from './components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './components/ui/dropdown-menu';
 
 // Import Lucide React icons
-import { Search, BookOpen, Users, University, Star, Eye, Download, Calendar, MapPin, Award, ExternalLink, ShoppingCart, Filter } from 'lucide-react';
+import { Search, BookOpen, Users, University, Star, Eye, Download, Calendar, MapPin, Award, ExternalLink, ShoppingCart, Filter, MoreVertical, Flag, UserCheck } from 'lucide-react';
+
+// Import Auth components
+import { AuthProvider, UserMenu, ThesisClaimModal, ThesisReportModal } from './components/Auth';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
