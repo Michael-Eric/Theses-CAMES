@@ -611,15 +611,15 @@ const Rankings = () => {
                       <div>
                         <h3 className="font-semibold">{university.university_name}</h3>
                         <p className="text-sm text-gray-600">
-                          {university.country} • {university.weekly_views} consultations cette semaine
+                          {university.country} • {university.weekly_views} {t('rankings.consultationsThisWeek')}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {university.theses_count} thèse{university.theses_count > 1 ? 's' : ''} • {university.total_views} vues totales
+                          {university.theses_count} {university.theses_count > 1 ? t('rankings.theses') : t('rankings.thesis')} • {university.total_views} {t('rankings.totalViews')}
                         </p>
                         {university.top_authors && university.top_authors.length > 0 && (
                           <p className="text-xs text-gray-400 mt-1">
-                            Auteurs: {university.top_authors.slice(0, 2).join(', ')}
-                            {university.top_authors.length > 2 && ` +${university.top_authors.length - 2} autres`}
+                            {t('rankings.authors')}: {university.top_authors.slice(0, 2).join(', ')}
+                            {university.top_authors.length > 2 && ` +${university.top_authors.length - 2} ${t('rankings.others')}`}
                           </p>
                         )}
                       </div>
