@@ -19,6 +19,9 @@ from emergentintegrations.payments.stripe.checkout import StripeCheckout, Checko
 # Import connectors
 from importers.scheduler import ImportScheduler
 
+# Import authentication
+from auth.routes import create_auth_router
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
