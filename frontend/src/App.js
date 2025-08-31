@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import './App.css';
 
@@ -19,6 +20,9 @@ import { Search, BookOpen, Users, University, Star, Eye, Download, Calendar, Map
 
 // Import Auth components
 import { AuthProvider, UserMenu, ThesisClaimModal, ThesisReportModal } from './components/Auth';
+
+// Import Language Switcher
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
