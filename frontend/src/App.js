@@ -188,11 +188,11 @@ const ThesisDetailModal = ({ thesis, onClose, onPurchase }) => {
 
   const getStars = (count) => {
     let stars = 0;
-    if (count >= 50) stars = 5;
-    else if (count >= 25) stars = 4;
-    else if (count >= 10) stars = 3;
-    else if (count >= 5) stars = 2;
-    else if (count >= 1) stars = 1;
+    if (count >= 200) stars = 5;
+    else if (count >= 100) stars = 4;
+    else if (count >= 50) stars = 3;
+    else if (count >= 20) stars = 2;
+    else if (count >= 5) stars = 1;
     
     return Array.from({ length: 5 }, (_, i) => (
       <Star
