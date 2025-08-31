@@ -622,54 +622,68 @@ async def get_checkout_status(session_id: str):
         logging.error(f"Error checking checkout status: {e}")
         raise HTTPException(status_code=500, detail="Failed to check payment status")
 
-@api_router.post("/webhook/stripe")
-async def stripe_webhook(request: Request):
-    """Handle Stripe webhooks"""
+@api_router.post("/admin/import/trigger")
+async def trigger_import(background_tasks: BackgroundTasks, max_records: int = Query(50)):
+    """Manually trigger import from HAL and Greenstone"""
     try:
-        if not stripe_checkout:
-            raise HTTPException(status_code=500, detail="Payment system not configured")
+        global import_scheduler
+        if not import_scheduler:
+            import_scheduler = ImportScheduler(db)
         
-        # Get request body and signature
-        request_body = await request.body()
-        stripe_signature = request.headers.get("Stripe-Signature")
+        # Run import in background
+        background_tasks.add_task(import_scheduler.run_full_import, max_records)
         
-        if not stripe_signature:
-            raise HTTPException(status_code=400, detail="Missing Stripe signature")
+        return {
+            "message": "Import job started",
+            "max_records": max_records,
+            "status": "running"
+        }
         
-        # Handle webhook
-        webhook_response = await stripe_checkout.handle_webhook(request_body, stripe_signature)
-        
-        # Process the webhook event
-        if webhook_response.event_type == "checkout.session.completed":
-            session_id = webhook_response.session_id
-            
-            # Update transaction status
-            await db.payment_transactions.update_one(
-                {"session_id": session_id, "payment_status": {"$ne": "paid"}},
-                {
-                    "$set": {
-                        "status": "completed",
-                        "payment_status": "paid",
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }
-                }
-            )
-            
-            # Get transaction to update thesis
-            transaction = await db.payment_transactions.find_one({"session_id": session_id})
-            if transaction:
-                await db.theses.update_one(
-                    {"id": transaction["thesis_id"]},
-                    {"$inc": {"downloads_count": 1}}
-                )
-        
-        return {"status": "success"}
-        
-    except HTTPException:
-        raise
     except Exception as e:
-        logging.error(f"Error handling Stripe webhook: {e}")
-        raise HTTPException(status_code=500, detail="Webhook processing failed")
+        logger.error(f"Error triggering import: {e}")
+        raise HTTPException(status_code=500, detail="Failed to trigger import")
+
+@api_router.get("/admin/import/history")
+async def get_import_history(limit: int = Query(20, le=100)):
+    """Get import job history"""
+    try:
+        global import_scheduler
+        if not import_scheduler:
+            import_scheduler = ImportScheduler(db)
+        
+        history = await import_scheduler.get_import_history(limit)
+        return {"import_jobs": history}
+        
+    except Exception as e:
+        logger.error(f"Error getting import history: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get import history")
+
+@api_router.get("/admin/import/status")
+async def get_import_status():
+    """Get current import system status"""
+    try:
+        # Check last import job
+        last_job = await db.import_jobs.find_one({}, sort=[("started_at", -1)])
+        
+        # Get total imported theses by source
+        hal_count = await db.theses.count_documents({"source_repo": "HAL"})
+        greenstone_count = await db.theses.count_documents({"source_repo": "Greenstone"})
+        other_count = await db.theses.count_documents({"source_repo": "Other"})
+        
+        return {
+            "last_import": last_job,
+            "thesis_counts": {
+                "hal": hal_count,
+                "greenstone": greenstone_count,
+                "other": other_count,
+                "total": hal_count + greenstone_count + other_count
+            },
+            "scheduler_status": "running" if import_scheduler and import_scheduler.running else "stopped"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting import status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get import status")
 
 # Include the router in the main app
 app.include_router(api_router)
