@@ -446,15 +446,18 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">Type d'accès</label>
-          <Select value={filters.access_type || 'all'} onValueChange={(value) => onFilterChange('access_type', value === 'all' ? null : value)}>
+          <label className="text-sm font-medium mb-2 block">Université</label>
+          <Select value={filters.university || 'all'} onValueChange={(value) => onFilterChange('university', value === 'all' ? null : value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Tous types" />
+              <SelectValue placeholder="Toutes universités" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous types</SelectItem>
-              <SelectItem value="open">Accès libre</SelectItem>
-              <SelectItem value="paywalled">Payant</SelectItem>
+              <SelectItem value="all">Toutes universités</SelectItem>
+              {stats?.top_universities?.map((university) => (
+                <SelectItem key={university.name} value={university.name}>
+                  {university.name} ({university.count})
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
