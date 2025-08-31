@@ -294,6 +294,29 @@ def parse_from_mongo(item):
         item['updated_at'] = datetime.fromisoformat(item['updated_at'])
     return item
 
+def get_current_week():
+    """Get current week in format YYYY-WXX"""
+    now = datetime.now(timezone.utc)
+    year, week, _ = now.isocalendar()
+    return f"{year}-W{week:02d}"
+
+async def increment_weekly_views(db, thesis_id: str):
+    """Increment weekly views for a thesis"""
+    try:
+        current_week = get_current_week()
+        
+        # Try to increment existing weekly log
+        result = await db.weekly_views.update_one(
+            {"thesis_id": thesis_id, "week_start": current_week},
+            {"$inc": {"views_count": 1}},
+            upsert=True
+        )
+        
+        return True
+    except Exception as e:
+        logger.error(f"Error incrementing weekly views: {e}")
+        return False
+
 def calculate_stars(views_count: int) -> int:
     """Calculate star rating based on weekly views count"""
     if views_count >= 200:
