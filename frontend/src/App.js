@@ -547,8 +547,8 @@ const Rankings = () => {
     <div className="space-y-8">
       <Tabs defaultValue="authors" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="authors">Auteurs les plus cités</TabsTrigger>
-          <TabsTrigger value="universities">Universités en tête</TabsTrigger>
+          <TabsTrigger value="authors">Auteurs les plus consultés cette semaine</TabsTrigger>
+          <TabsTrigger value="universities">Universités les plus consultées</TabsTrigger>
         </TabsList>
         
         <TabsContent value="authors" className="space-y-4">
