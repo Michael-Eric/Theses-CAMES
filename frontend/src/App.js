@@ -372,12 +372,12 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
       <div className="space-y-4">
         <div>
           <label className="text-sm font-medium mb-2 block">Pays</label>
-          <Select value={filters.country || ''} onValueChange={(value) => onFilterChange('country', value || null)}>
+          <Select value={filters.country || 'all'} onValueChange={(value) => onFilterChange('country', value === 'all' ? null : value)}>
             <SelectTrigger>
               <SelectValue placeholder="Tous les pays" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous les pays</SelectItem>
+              <SelectItem value="all">Tous les pays</SelectItem>
               {stats?.top_countries?.map((country) => (
                 <SelectItem key={country.name} value={country.name}>
                   {country.name} ({country.count})
