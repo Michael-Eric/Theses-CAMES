@@ -164,16 +164,19 @@ frontend:
         comment: "UI text updated to reflect weekly consultations instead of citations. Stars calculation updated."
 
   - task: "English translation support"
-    implemented: false
-    working: "NA"
+    implemented: true
+    working: "needs_testing"
     file: "/app/frontend/src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "English translation implementation not started yet. Need to implement i18n framework."
+      - working: "needs_testing"
+        agent: "main"
+        comment: "COMPLETED: Implemented full English translation support with react-i18next. Created translation files for FR/EN, LanguageSwitcher component, and updated all UI components with translation keys. Ready for testing."
 
 metadata:
   created_by: "main_agent"
