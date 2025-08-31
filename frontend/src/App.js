@@ -573,7 +573,7 @@ const Rankings = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="flex">
-                        {getStars(author.citations_count)}
+                        {getStars(author.weekly_views)}
                       </div>
                       <Badge variant="outline">
                         {author.disciplines[0]}
