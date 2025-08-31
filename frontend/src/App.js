@@ -702,8 +702,8 @@ const PurchaseSuccess = () => {
         return (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <h2 className="text-2xl font-semibold mb-2">Vérification du paiement...</h2>
-            <p className="text-gray-600">Veuillez patienter pendant que nous confirmons votre paiement.</p>
+            <h2 className="text-2xl font-semibold mb-2">{t('payment.checking')}</h2>
+            <p className="text-gray-600">{t('payment.pleaseWait')}</p>
           </div>
         );
       
@@ -715,21 +715,21 @@ const PurchaseSuccess = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-green-800 mb-2">Paiement réussi !</h2>
-            <p className="text-gray-600 mb-6">Merci pour votre achat. Vous avez maintenant accès à cette thèse.</p>
+            <h2 className="text-2xl font-semibold text-green-800 mb-2">{t('payment.success')}</h2>
+            <p className="text-gray-600 mb-6">{t('payment.thankYou')}</p>
             <div className="space-y-3">
               <Button 
                 onClick={() => window.location.href = `/?thesis=${thesisId}`}
                 className="bg-green-600 hover:bg-green-700"
               >
-                Consulter la thèse
+                {t('payment.consultThesis')}
               </Button>
               <br />
               <Button 
                 variant="outline"
                 onClick={() => window.location.href = '/'}
               >
-                Retour à l'accueil
+                {t('payment.backHome')}
               </Button>
             </div>
           </div>
@@ -743,13 +743,13 @@ const PurchaseSuccess = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-orange-800 mb-2">Session expirée</h2>
-            <p className="text-gray-600 mb-6">Votre session de paiement a expiré. Veuillez réessayer.</p>
+            <h2 className="text-2xl font-semibold text-orange-800 mb-2">{t('payment.expired')}</h2>
+            <p className="text-gray-600 mb-6">{t('payment.sessionExpired')}</p>
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/'}
             >
-              Retour à l'accueil
+              {t('payment.backHome')}
             </Button>
           </div>
         );
