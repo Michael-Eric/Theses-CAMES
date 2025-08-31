@@ -474,6 +474,95 @@ class ThesesCAMESAPITester:
             self.log_test("Filter Tests", False, f"Error: {str(e)}")
             return False
 
+    def test_university_filter(self):
+        """Test the new university filter functionality"""
+        try:
+            # Test university filter with CAMES universities
+            test_universities = [
+                "Université Cheikh Anta Diop",
+                "Université Joseph Ki-Zerbo", 
+                "Université des Sciences, des Techniques et des Technologies de Bamako",
+                "Université Félix Houphouët-Boigny"
+            ]
+            
+            all_success = True
+            for university in test_universities:
+                # URL encode the university name
+                import urllib.parse
+                encoded_university = urllib.parse.quote(university)
+                response = requests.get(f"{self.api_url}/theses?university={encoded_university}", timeout=10)
+                success = response.status_code == 200
+                details = f"Status: {response.status_code}"
+                
+                if success:
+                    data = response.json()
+                    details += f", Results: {len(data['results'])}"
+                    # Verify that results actually match the university filter
+                    if data['results']:
+                        first_result = data['results'][0]
+                        if 'university' in first_result:
+                            details += f", First result university: {first_result['university']}"
+                        else:
+                            success = False
+                            details += ", Missing university field in results"
+                else:
+                    all_success = False
+                    
+                self.log_test(f"University Filter - {university}", success, details)
+                
+            return all_success
+        except Exception as e:
+            self.log_test("University Filter Tests", False, f"Error: {str(e)}")
+            return False
+
+    def test_enriched_database(self):
+        """Test that the database has been enriched with 15 theses"""
+        try:
+            response = requests.get(f"{self.api_url}/stats", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                total_theses = data.get('total_theses', 0)
+                
+                # Check if we have at least 15 theses (the enriched amount)
+                if total_theses >= 15:
+                    details += f", Database enriched: {total_theses} theses found (≥15 expected)"
+                    
+                    # Check for CAMES universities in top universities
+                    top_universities = data.get('top_universities', [])
+                    cames_universities = [
+                        "Université Cheikh Anta Diop",
+                        "Université Joseph Ki-Zerbo",
+                        "Université des Sciences, des Techniques et des Technologies de Bamako",
+                        "Université Félix Houphouët-Boigny"
+                    ]
+                    
+                    found_cames = []
+                    for uni_data in top_universities:
+                        uni_name = uni_data.get('name', '')
+                        for cames_uni in cames_universities:
+                            if cames_uni in uni_name:
+                                found_cames.append(uni_name)
+                                break
+                    
+                    if found_cames:
+                        details += f", CAMES universities found: {len(found_cames)}"
+                    else:
+                        success = False
+                        details += ", No CAMES universities found in top universities"
+                        
+                else:
+                    success = False
+                    details += f", Database not sufficiently enriched: only {total_theses} theses found (<15)"
+                    
+            self.log_test("Enriched Database Check", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Enriched Database Check", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Thèses CAMES API Tests")
