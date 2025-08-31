@@ -565,8 +565,160 @@ const Rankings = () => {
   );
 };
 
-// Main Home Component
-const Home = () => {
+// Purchase Success Component
+const PurchaseSuccess = () => {
+  const [paymentStatus, setPaymentStatus] = useState('checking');
+  const [thesisId, setThesisId] = useState(null);
+  const [sessionId, setSessionId] = useState(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionIdParam = urlParams.get('session_id');
+    const thesisIdParam = urlParams.get('thesis_id');
+    
+    if (sessionIdParam && thesisIdParam) {
+      setSessionId(sessionIdParam);
+      setThesisId(thesisIdParam);
+      pollPaymentStatus(sessionIdParam);
+    } else {
+      setPaymentStatus('error');
+    }
+  }, []);
+
+  const pollPaymentStatus = async (sessionId, attempts = 0) => {
+    const maxAttempts = 10;
+    const pollInterval = 2000; // 2 seconds
+
+    if (attempts >= maxAttempts) {
+      setPaymentStatus('timeout');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API}/checkout/status/${sessionId}`);
+      
+      if (response.data.payment_status === 'paid') {
+        setPaymentStatus('success');
+        return;
+      } else if (response.data.status === 'expired') {
+        setPaymentStatus('expired');
+        return;
+      }
+
+      // If payment is still pending, continue polling
+      setTimeout(() => pollPaymentStatus(sessionId, attempts + 1), pollInterval);
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      setPaymentStatus('error');
+    }
+  };
+
+  const renderContent = () => {
+    switch (paymentStatus) {
+      case 'checking':
+        return (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <h2 className="text-2xl font-semibold mb-2">Vérification du paiement...</h2>
+            <p className="text-gray-600">Veuillez patienter pendant que nous confirmons votre paiement.</p>
+          </div>
+        );
+      
+      case 'success':
+        return (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-green-800 mb-2">Paiement réussi !</h2>
+            <p className="text-gray-600 mb-6">Merci pour votre achat. Vous avez maintenant accès à cette thèse.</p>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => window.location.href = `/?thesis=${thesisId}`}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Consulter la thèse
+              </Button>
+              <br />
+              <Button 
+                variant="outline"
+                onClick={() => window.location.href = '/'}
+              >
+                Retour à l'accueil
+              </Button>
+            </div>
+          </div>
+        );
+      
+      case 'expired':
+        return (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-orange-800 mb-2">Session expirée</h2>
+            <p className="text-gray-600 mb-6">Votre session de paiement a expiré. Veuillez réessayer.</p>
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+        );
+      
+      case 'timeout':
+        return (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-yellow-800 mb-2">Vérification en cours</h2>
+            <p className="text-gray-600 mb-6">La vérification du paiement prend plus de temps que prévu. Vérifiez votre email pour la confirmation.</p>
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+        );
+      
+      default:
+        return (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-semibold text-red-800 mb-2">Erreur</h2>
+            <p className="text-gray-600 mb-6">Une erreur est survenue lors de la vérification du paiement.</p>
+            <Button 
+              variant="outline"
+              onClick={() => window.location.href = '/'}
+            >
+              Retour à l'accueil
+            </Button>
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        {renderContent()}
+      </div>
+    </div>
+  );
+};
   const [theses, setTheses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
