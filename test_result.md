@@ -183,9 +183,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Weekly view tracking system"
-    - "Author ranking based on weekly views"
-    - "University ranking based on weekly views"
+    - "Update UI text from citations to consultations"
+    - "English translation support"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
