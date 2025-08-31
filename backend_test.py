@@ -151,6 +151,154 @@ class ThesesCAMESAPITester:
             self.log_test("Get Thesis by ID", False, f"Error: {str(e)}")
             return False, None
 
+    def test_weekly_view_tracking(self):
+        """Test weekly view tracking functionality"""
+        try:
+            # First get a thesis ID
+            response = requests.get(f"{self.api_url}/theses?limit=1", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Weekly View Tracking", False, "Could not get thesis list")
+                return False
+                
+            data = response.json()
+            if not data['results']:
+                self.log_test("Weekly View Tracking", False, "No theses found")
+                return False
+                
+            thesis_id = data['results'][0]['id']
+            initial_views = data['results'][0].get('views_count', 0)
+            
+            # Make multiple requests to increment views
+            view_requests = 3
+            for i in range(view_requests):
+                response = requests.get(f"{self.api_url}/theses/{thesis_id}", timeout=10)
+                if response.status_code != 200:
+                    self.log_test("Weekly View Tracking", False, f"Failed to access thesis on request {i+1}")
+                    return False
+            
+            # Get thesis again to check if views were incremented
+            response = requests.get(f"{self.api_url}/theses/{thesis_id}", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Weekly View Tracking", False, "Could not verify view increment")
+                return False
+                
+            final_data = response.json()
+            final_views = final_data.get('views_count', 0)
+            
+            # Views should have increased by at least the number of requests made
+            expected_increase = view_requests + 1  # +1 for the verification request
+            actual_increase = final_views - initial_views
+            
+            success = actual_increase >= expected_increase
+            details = f"Initial views: {initial_views}, Final views: {final_views}, Increase: {actual_increase} (expected ≥{expected_increase})"
+            
+            self.log_test("Weekly View Tracking", success, details)
+            return success, thesis_id
+        except Exception as e:
+            self.log_test("Weekly View Tracking", False, f"Error: {str(e)}")
+            return False, None
+
+    def test_weekly_view_data_consistency(self):
+        """Test that weekly view data is consistent with simulated data"""
+        try:
+            # Get author rankings to check weekly views
+            response = requests.get(f"{self.api_url}/rankings/authors?limit=5", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Weekly View Data Consistency", False, "Could not get author rankings")
+                return False
+                
+            authors = response.json()
+            if not authors:
+                self.log_test("Weekly View Data Consistency", False, "No authors found in rankings")
+                return False
+            
+            # Check that authors are sorted by weekly views (descending)
+            weekly_views_sorted = True
+            for i in range(len(authors) - 1):
+                current_views = authors[i].get('weekly_views', 0)
+                next_views = authors[i + 1].get('weekly_views', 0)
+                if current_views < next_views:
+                    weekly_views_sorted = False
+                    break
+            
+            # Get university rankings to check aggregation
+            response = requests.get(f"{self.api_url}/rankings/universities?limit=5", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Weekly View Data Consistency", False, "Could not get university rankings")
+                return False
+                
+            universities = response.json()
+            
+            # Check that universities are sorted by weekly views (descending)
+            uni_weekly_views_sorted = True
+            for i in range(len(universities) - 1):
+                current_views = universities[i].get('weekly_views', 0)
+                next_views = universities[i + 1].get('weekly_views', 0)
+                if current_views < next_views:
+                    uni_weekly_views_sorted = False
+                    break
+            
+            success = weekly_views_sorted and uni_weekly_views_sorted
+            details = f"Authors sorted by weekly views: {weekly_views_sorted}, Universities sorted by weekly views: {uni_weekly_views_sorted}"
+            
+            if authors:
+                top_author = authors[0]
+                details += f", Top author: {top_author['author_name']} ({top_author.get('weekly_views', 0)} weekly views)"
+            
+            if universities:
+                top_uni = universities[0]
+                details += f", Top university: {top_uni['university_name']} ({top_uni.get('weekly_views', 0)} weekly views)"
+            
+            self.log_test("Weekly View Data Consistency", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Weekly View Data Consistency", False, f"Error: {str(e)}")
+            return False
+
+    def test_star_calculation_accuracy(self):
+        """Test that star calculations are accurate based on weekly views"""
+        try:
+            response = requests.get(f"{self.api_url}/rankings/authors?limit=10", timeout=10)
+            if response.status_code != 200:
+                self.log_test("Star Calculation Accuracy", False, "Could not get author rankings")
+                return False
+                
+            authors = response.json()
+            if not authors:
+                self.log_test("Star Calculation Accuracy", False, "No authors found")
+                return False
+            
+            star_errors = []
+            for author in authors:
+                weekly_views = author.get('weekly_views', 0)
+                actual_stars = author.get('stars', 0)
+                expected_stars = self.calculate_expected_stars(weekly_views)
+                
+                if actual_stars != expected_stars:
+                    star_errors.append({
+                        'author': author['author_name'],
+                        'weekly_views': weekly_views,
+                        'expected_stars': expected_stars,
+                        'actual_stars': actual_stars
+                    })
+            
+            success = len(star_errors) == 0
+            details = f"Checked {len(authors)} authors"
+            
+            if star_errors:
+                details += f", {len(star_errors)} star calculation errors found"
+                if len(star_errors) <= 3:  # Show details for first few errors
+                    for error in star_errors[:3]:
+                        details += f" | {error['author']}: {error['weekly_views']} views → expected {error['expected_stars']}★, got {error['actual_stars']}★"
+            else:
+                details += ", all star calculations correct"
+            
+            self.log_test("Star Calculation Accuracy", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Star Calculation Accuracy", False, f"Error: {str(e)}")
+            return False
+
     def test_author_rankings(self):
         """Test author rankings endpoint with weekly views"""
         try:
