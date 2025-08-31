@@ -762,13 +762,13 @@ const PurchaseSuccess = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-yellow-800 mb-2">Vérification en cours</h2>
-            <p className="text-gray-600 mb-6">La vérification du paiement prend plus de temps que prévu. Vérifiez votre email pour la confirmation.</p>
+            <h2 className="text-2xl font-semibold text-yellow-800 mb-2">{t('payment.verificationInProgress')}</h2>
+            <p className="text-gray-600 mb-6">{t('payment.verificationDelay')}</p>
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/'}
             >
-              Retour à l'accueil
+              {t('payment.backHome')}
             </Button>
           </div>
         );
@@ -781,13 +781,13 @@ const PurchaseSuccess = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </div>
-            <h2 className="text-2xl font-semibold text-red-800 mb-2">Erreur</h2>
-            <p className="text-gray-600 mb-6">Une erreur est survenue lors de la vérification du paiement.</p>
+            <h2 className="text-2xl font-semibold text-red-800 mb-2">{t('payment.error')}</h2>
+            <p className="text-gray-600 mb-6">{t('payment.errorMessage')}</p>
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/'}
             >
-              Retour à l'accueil
+              {t('payment.backHome')}
             </Button>
           </div>
         );
