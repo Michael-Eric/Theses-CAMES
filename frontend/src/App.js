@@ -804,6 +804,7 @@ const PurchaseSuccess = () => {
 
 // Main Home Component
 const Home = () => {
+  const { t } = useTranslation();
   const [theses, setTheses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
