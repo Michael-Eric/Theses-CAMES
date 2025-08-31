@@ -963,16 +963,16 @@ const Home = () => {
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">Chargement des thèses...</p>
+                <p className="mt-2 text-gray-600">{t('common.loadingTheses')}</p>
               </div>
             ) : (
               <>
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-gray-900">
-                    {searchQuery ? `Résultats pour "${searchQuery}"` : 'Toutes les thèses'}
+                    {searchQuery ? `${t('search.resultsFor')} "${searchQuery}"` : t('search.allTheses')}
                   </h2>
                   <p className="text-sm text-gray-500">
-                    Page {currentPage} sur {totalPages}
+                    {t('search.page')} {currentPage} {t('search.of')} {totalPages}
                   </p>
                 </div>
 
