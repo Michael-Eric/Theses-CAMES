@@ -509,6 +509,7 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
 
 // Rankings Component
 const Rankings = () => {
+  const { t } = useTranslation();
   const [authorRankings, setAuthorRankings] = useState([]);
   const [universityRankings, setUniversityRankings] = useState([]);
   const [loading, setLoading] = useState(false);
