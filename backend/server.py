@@ -499,7 +499,17 @@ async def get_author_rankings(
         logging.error(f"Error getting author rankings: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.get("/rankings/universities", response_model=List[UniversityRanking])
+@api_router.get("/rankings/universities", 
+    response_model=List[UniversityRanking],
+    summary="Classement des universités",
+    description="""
+    Classement des universités par nombre de thèses publiées.
+    
+    Regroupe les thèses par institution et pays, avec possibilité
+    de filtrer par discipline et pays. Utile pour identifier
+    les institutions les plus actives en recherche doctorale.
+    """
+)
 async def get_university_rankings(
     discipline: Optional[str] = Query(None),
     country: Optional[str] = Query(None),
