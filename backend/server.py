@@ -441,7 +441,7 @@ async def search_theses(
     description="""
     Récupérer les métadonnées complètes d'une thèse par son ID.
     
-    Incrémente automatiquement le compteur de vues.
+    Incrémente automatiquement le compteur de vues globales et hebdomadaires.
     Retourne toutes les informations disponibles : auteur, directeurs,
     université, résumé, mots-clés, statistiques, etc.
     """
@@ -453,11 +453,14 @@ async def get_thesis(thesis_id: str):
         if not thesis:
             raise HTTPException(status_code=404, detail="Thesis not found")
         
-        # Increment view count
+        # Increment global view count
         await db.theses.update_one(
             {"id": thesis_id},
             {"$inc": {"views_count": 1}}
         )
+        
+        # Increment weekly view count
+        await increment_weekly_views(db, thesis_id)
         
         thesis = parse_from_mongo(thesis)
         return Thesis(**thesis)
