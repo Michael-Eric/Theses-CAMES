@@ -860,6 +860,202 @@ async def stripe_webhook(request: Request):
         logging.error(f"Error handling Stripe webhook: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
 
+@app.get("/sitemap.xml", 
+    response_class=Response,
+    summary="Plan du site XML",
+    description="Génère automatiquement le sitemap.xml pour l'indexation par les moteurs de recherche"
+)
+async def generate_sitemap():
+    """Generate XML sitemap for search engines"""
+    try:
+        # Create sitemap root
+        urlset = ET.Element("urlset")
+        urlset.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
+        
+        base_url = "https://theses-cames.preview.emergentagent.com"
+        
+        # Add homepage
+        url_elem = ET.SubElement(urlset, "url")
+        ET.SubElement(url_elem, "loc").text = base_url
+        ET.SubElement(url_elem, "lastmod").text = datetime.now().strftime("%Y-%m-%d")
+        ET.SubElement(url_elem, "changefreq").text = "daily"
+        ET.SubElement(url_elem, "priority").text = "1.0"
+        
+        # Add static pages
+        static_pages = [
+            ("/rankings", "weekly", "0.8"),
+            ("/about", "monthly", "0.5"),
+            ("/contact", "monthly", "0.5")
+        ]
+        
+        for page, freq, priority in static_pages:
+            url_elem = ET.SubElement(urlset, "url")
+            ET.SubElement(url_elem, "loc").text = f"{base_url}{page}"
+            ET.SubElement(url_elem, "lastmod").text = datetime.now().strftime("%Y-%m-%d")
+            ET.SubElement(url_elem, "changefreq").text = freq
+            ET.SubElement(url_elem, "priority").text = priority
+        
+        # Add thesis pages (last 1000 theses)
+        theses = await db.theses.find({}).sort("created_at", -1).limit(1000).to_list(length=1000)
+        
+        for thesis in theses:
+            url_elem = ET.SubElement(urlset, "url")
+            ET.SubElement(url_elem, "loc").text = f"{base_url}/thesis/{thesis['id']}"
+            
+            # Use thesis creation date or current date
+            if 'created_at' in thesis:
+                if isinstance(thesis['created_at'], str):
+                    try:
+                        lastmod_date = datetime.fromisoformat(thesis['created_at'].replace('Z', '+00:00'))
+                        ET.SubElement(url_elem, "lastmod").text = lastmod_date.strftime("%Y-%m-%d")
+                    except:
+                        ET.SubElement(url_elem, "lastmod").text = datetime.now().strftime("%Y-%m-%d")
+                else:
+                    ET.SubElement(url_elem, "lastmod").text = thesis['created_at'].strftime("%Y-%m-%d")
+            else:
+                ET.SubElement(url_elem, "lastmod").text = datetime.now().strftime("%Y-%m-%d")
+            
+            ET.SubElement(url_elem, "changefreq").text = "monthly"
+            ET.SubElement(url_elem, "priority").text = "0.6"
+        
+        # Generate XML string
+        xml_str = ET.tostring(urlset, encoding='unicode', method='xml')
+        xml_formatted = '<?xml version="1.0" encoding="UTF-8"?>\n' + xml_str
+        
+        return Response(content=xml_formatted, media_type="application/xml")
+        
+    except Exception as e:
+        logger.error(f"Error generating sitemap: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate sitemap")
+
+@app.get("/robots.txt", 
+    response_class=Response,
+    summary="Fichier robots.txt",
+    description="Instructions pour les robots des moteurs de recherche"
+)
+async def robots_txt():
+    """Generate robots.txt for search engine crawlers"""
+    robots_content = """User-agent: *
+Allow: /
+Disallow: /api/admin/
+Disallow: /api/auth/
+Disallow: /api/checkout/
+Disallow: /api/webhook/
+
+# Sitemap location
+Sitemap: https://theses-cames.preview.emergentagent.com/sitemap.xml
+
+# Crawl delay (be respectful)
+Crawl-delay: 1
+"""
+    return Response(content=robots_content, media_type="text/plain")
+
+@api_router.get("/thesis/{thesis_id}/metadata",
+    summary="Métadonnées structurées d'une thèse",
+    description="""
+    Récupère les métadonnées structurées d'une thèse au format JSON-LD
+    compatible avec Schema.org pour l'optimisation SEO.
+    
+    Inclut les balises ScholarlyArticle/Thesis pour une meilleure
+    indexation par les moteurs de recherche académiques.
+    """
+)
+async def get_thesis_metadata(thesis_id: str):
+    """Get structured metadata for a thesis (Schema.org JSON-LD)"""
+    try:
+        thesis = await db.theses.find_one({"id": thesis_id})
+        if not thesis:
+            raise HTTPException(status_code=404, detail="Thesis not found")
+        
+        # Increment view count
+        await db.theses.update_one(
+            {"id": thesis_id},
+            {"$inc": {"views_count": 1}}
+        )
+        
+        # Generate Schema.org structured data
+        structured_data = {
+            "@context": "https://schema.org",
+            "@type": "ScholarlyArticle",
+            "identifier": thesis_id,
+            "name": thesis.get("title", ""),
+            "headline": thesis.get("title", ""),
+            "description": thesis.get("abstract", ""),
+            "author": {
+                "@type": "Person",
+                "name": thesis.get("author_name", ""),
+                "identifier": thesis.get("author_orcid", "") if thesis.get("author_orcid") else None
+            },
+            "contributor": [
+                {"@type": "Person", "name": supervisor, "role": "supervisor"}
+                for supervisor in thesis.get("supervisor_names", [])
+            ],
+            "publisher": {
+                "@type": "Organization",
+                "name": thesis.get("university", "")
+            },
+            "sourceOrganization": {
+                "@type": "Organization", 
+                "name": thesis.get("university", ""),
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": thesis.get("country", "")
+                }
+            },
+            "datePublished": f"{thesis.get('defense_date', '2023')}-01-01",
+            "inLanguage": thesis.get("language", "fr"),
+            "about": thesis.get("discipline", ""),
+            "keywords": thesis.get("keywords", []),
+            "license": thesis.get("license", ""),
+            "isAccessibleForFree": thesis.get("access_type") == "open",
+            "url": thesis.get("url_open_access") if thesis.get("access_type") == "open" else None,
+            "sameAs": thesis.get("source_url"),
+            "citation": f"{thesis.get('author_name', '')}. \"{thesis.get('title', '')}\". Thèse de doctorat, {thesis.get('university', '')}, {thesis.get('defense_date', '2023')}.",
+            "numberOfPages": thesis.get("pages"),
+            "educationalLevel": "Graduate",
+            "learningResourceType": "Thesis",
+            "thumbnailUrl": thesis.get("thumbnail"),
+            "interactionStatistic": [
+                {
+                    "@type": "InteractionCounter",
+                    "interactionType": "https://schema.org/ViewAction",
+                    "userInteractionCount": thesis.get("views_count", 0)
+                },
+                {
+                    "@type": "InteractionCounter", 
+                    "interactionType": "https://schema.org/DownloadAction",
+                    "userInteractionCount": thesis.get("downloads_count", 0)
+                },
+                {
+                    "@type": "InteractionCounter",
+                    "interactionType": "https://schema.org/CiteAction", 
+                    "userInteractionCount": thesis.get("site_citations_count", 0)
+                }
+            ]
+        }
+        
+        # Clean up None values
+        def clean_dict(d):
+            if isinstance(d, dict):
+                return {k: clean_dict(v) for k, v in d.items() if v is not None and v != "" and v != []}
+            elif isinstance(d, list):
+                return [clean_dict(item) for item in d if item is not None]
+            else:
+                return d
+        
+        structured_data = clean_dict(structured_data)
+        
+        return {
+            "thesis": parse_from_mongo(thesis),
+            "structured_data": structured_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting thesis metadata {thesis_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 # Include the router in the main app
 app.include_router(api_router)
 
