@@ -581,13 +581,13 @@ async def get_author_rankings(
 
 @api_router.get("/rankings/universities", 
     response_model=List[UniversityRanking],
-    summary="Classement des universités",
+    summary="Universités les plus consultées via leurs auteurs",
     description="""
-    Classement des universités par nombre de thèses publiées.
+    Classement des universités basé sur les consultations de leurs auteurs.
     
-    Regroupe les thèses par institution et pays, avec possibilité
-    de filtrer par discipline et pays. Utile pour identifier
-    les institutions les plus actives en recherche doctorale.
+    Le classement est basé sur le total des consultations hebdomadaires
+    de toutes les thèses des auteurs de chaque université. Cela reflète
+    l'engagement et l'intérêt pour la recherche de chaque institution.
     """
 )
 async def get_university_rankings(
@@ -595,26 +595,66 @@ async def get_university_rankings(
     country: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100)
 ):
-    """Get university rankings by thesis count"""
+    """Get university rankings by total views via their authors"""
     try:
-        pipeline = []
-        match_filter = {}
+        current_week = get_current_week()
         
+        # Aggregation pipeline to get views by university via authors
+        pipeline = [
+            # Join theses with weekly views
+            {
+                "$lookup": {
+                    "from": "weekly_views",
+                    "localField": "id",
+                    "foreignField": "thesis_id",
+                    "as": "weekly_views"
+                }
+            },
+            # Calculate current week views
+            {
+                "$addFields": {
+                    "current_week_views": {
+                        "$sum": {
+                            "$map": {
+                                "input": "$weekly_views",
+                                "as": "view",
+                                "in": {
+                                    "$cond": [
+                                        {"$eq": ["$$view.week_start", current_week]},
+                                        "$$view.views_count",
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+        
+        # Add filters
+        match_filters = {}
         if discipline:
-            match_filter["discipline"] = {"$regex": re.escape(discipline), "$options": "i"}
+            match_filters["discipline"] = {"$regex": re.escape(discipline), "$options": "i"}
         if country:
-            match_filter["country"] = {"$regex": re.escape(country), "$options": "i"}
+            match_filters["country"] = {"$regex": re.escape(country), "$options": "i"}
         
-        if match_filter:
-            pipeline.append({"$match": match_filter})
+        if match_filters:
+            pipeline.insert(0, {"$match": match_filters})
         
         pipeline.extend([
-            {"$group": {
-                "_id": {"university": "$university", "country": "$country"},
-                "theses_count": {"$sum": 1},
-                "disciplines": {"$addToSet": "$discipline"}
-            }},
-            {"$sort": {"theses_count": -1}},
+            # Group by university and country
+            {
+                "$group": {
+                    "_id": {"university": "$university", "country": "$country"},
+                    "weekly_views": {"$sum": "$current_week_views"},
+                    "total_views": {"$sum": "$views_count"},
+                    "theses_count": {"$sum": 1},
+                    "disciplines": {"$addToSet": "$discipline"},
+                    "top_authors": {"$addToSet": "$author_name"}
+                }
+            },
+            {"$sort": {"weekly_views": -1}},
             {"$limit": limit}
         ])
         
@@ -622,16 +662,22 @@ async def get_university_rankings(
         
         rankings = []
         for result in results:
+            # Limit top authors to 3 most relevant
+            top_authors = result["top_authors"][:3] if result["top_authors"] else []
+            
             rankings.append(UniversityRanking(
                 university_name=result["_id"]["university"],
                 country=result["_id"]["country"],
+                weekly_views=result["weekly_views"],
+                total_views=result["total_views"],
                 theses_count=result["theses_count"],
+                top_authors=top_authors,
                 disciplines=result["disciplines"]
             ))
         
         return rankings
     except Exception as e:
-        logging.error(f"Error getting university rankings: {e}")
+        logger.error(f"Error getting university rankings: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.get("/stats",
