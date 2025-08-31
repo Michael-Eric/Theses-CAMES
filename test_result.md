@@ -107,39 +107,48 @@ user_problem_statement: "Complete the weekly consultation ranking system impleme
 backend:
   - task: "Weekly view tracking system"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "needs_testing"
         agent: "main"
         comment: "Weekly view tracking logic implemented. WeeklyView model and increment_weekly_views function added. Needs testing with simulated data."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Weekly view tracking is working correctly. GET /api/theses/{thesis_id} properly increments both global views_count and weekly_views collection. Verified view increments from 526→527 during testing. Weekly views are stored with correct week format (YYYY-WXX) and aggregated properly in rankings."
 
   - task: "Author ranking based on weekly views"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "needs_testing"
         agent: "main"
         comment: "Author ranking endpoint updated to use weekly views aggregation. calculate_stars function implemented."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: Author rankings by weekly views working perfectly. GET /api/rankings/authors returns authors sorted by weekly_views (descending). Star calculation accurate: Fatoumata Traoré (65 weekly views = 3★), Dr. Abdoulaye Moussa (46 weekly views = 2★). All required fields present: author_name, weekly_views, total_views, stars, theses_count, disciplines."
 
   - task: "University ranking based on weekly views"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "needs_testing"
         agent: "main"
         comment: "University ranking endpoint updated to aggregate weekly views by university. Ready for testing."
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED SUCCESSFULLY: University rankings by weekly views working correctly. GET /api/rankings/universities properly aggregates weekly views from authors. Top university: Université des Sciences, des Techniques et des Technologies de Bamako (65 weekly views, 620 total views, 2 theses). Aggregation pipeline working correctly with proper sorting by weekly_views descending."
 
 frontend:
   - task: "Update UI text from citations to consultations"
