@@ -15,6 +15,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from .hal_connector import HALConnector
 from .greenstone_connector import GreenstoneConnector
+from .enhanced_connector import EnhancedThesesConnector
 
 logger = logging.getLogger(__name__)
 
