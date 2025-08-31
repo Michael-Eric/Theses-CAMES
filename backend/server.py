@@ -1,5 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Query, Depends, Request, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,6 +12,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 import re
+import xml.etree.ElementTree as ET
 
 # Import Stripe payment integration
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
