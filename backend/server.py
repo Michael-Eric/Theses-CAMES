@@ -24,6 +24,20 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Initialize Stripe checkout
+STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY')
+stripe_checkout = None
+
+if STRIPE_API_KEY:
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url="")
+
+# Thesis pricing packages
+THESIS_PACKAGES = {
+    "standard": {"price": 5.0, "currency": "eur", "name": "Accès Standard"},
+    "premium": {"price": 10.0, "currency": "eur", "name": "Accès Premium"},
+    "institutional": {"price": 25.0, "currency": "eur", "name": "Licence Institutionnelle"}
+}
+
 # Create the main app without a prefix
 app = FastAPI(title="Thèses CAMES API", version="1.0.0")
 
