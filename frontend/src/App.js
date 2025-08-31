@@ -926,20 +926,20 @@ const Home = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">{stats.total_theses}</div>
-                <div className="text-sm text-gray-500">Thèses totales</div>
+                <div className="text-sm text-gray-500">{t('stats.totalTheses')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">{stats.open_access}</div>
-                <div className="text-sm text-gray-500">Accès libre</div>
+                <div className="text-sm text-gray-500">{t('stats.openAccess')}</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">{stats.paywalled}</div>
-                <div className="text-sm text-gray-500">Payantes</div>
+                <div className="text-sm text-gray-500">{t('stats.paywall')}</div>
               </div>
               <div className="text-center">
                 <Button onClick={() => setShowRankings(true)} variant="outline" size="sm">
                   <Award className="w-4 h-4 mr-2" />
-                  Voir palmarès
+                  {t('stats.viewRankings')}
                 </Button>
               </div>
             </div>
