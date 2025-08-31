@@ -863,7 +863,8 @@ async def stripe_webhook(request: Request):
 @app.get("/sitemap.xml", 
     response_class=Response,
     summary="Plan du site XML",
-    description="Génère automatiquement le sitemap.xml pour l'indexation par les moteurs de recherche"
+    description="Génère automatiquement le sitemap.xml pour l'indexation par les moteurs de recherche",
+    include_in_schema=False
 )
 async def generate_sitemap():
     """Generate XML sitemap for search engines"""
