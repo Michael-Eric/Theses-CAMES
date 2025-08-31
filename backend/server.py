@@ -244,9 +244,12 @@ class WeeklyViewsLog(BaseModel):
     views_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class WeeklyViewsCreate(BaseModel):
-    thesis_id: str
-    week_start: str
+class WebhookEvent(BaseModel):
+    event_type: str
+    event_id: str
+    session_id: str
+    payment_status: str
+    metadata: Dict[str, str]
 
 class AuthorRanking(BaseModel):
     author_name: str
