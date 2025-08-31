@@ -443,7 +443,22 @@ async def create_thesis(thesis_data: ThesisCreate):
         logging.error(f"Error creating thesis: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
-@api_router.get("/rankings/authors", response_model=List[AuthorRanking])
+@api_router.get("/rankings/authors", 
+    response_model=List[AuthorRanking],
+    summary="Classement des auteurs",
+    description="""
+    Classement des auteurs les plus cités sur la plateforme.
+    
+    Le système d'étoiles (1-5★) est basé sur le nombre de citations :
+    - 1★ : 1-4 citations
+    - 2★ : 5-9 citations  
+    - 3★ : 10-24 citations
+    - 4★ : 25-49 citations
+    - 5★ : 50+ citations
+    
+    Peut être filtré par discipline.
+    """
+)
 async def get_author_rankings(
     discipline: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100)
