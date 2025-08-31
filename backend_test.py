@@ -28,6 +28,21 @@ class ThesesCAMESAPITester:
             "details": details
         })
 
+    def calculate_expected_stars(self, weekly_views):
+        """Calculate expected star rating based on weekly views"""
+        if weekly_views >= 200:
+            return 5
+        elif weekly_views >= 100:
+            return 4
+        elif weekly_views >= 50:
+            return 3
+        elif weekly_views >= 20:
+            return 2
+        elif weekly_views >= 5:
+            return 1
+        else:
+            return 0
+
     def test_api_root(self):
         """Test API root endpoint"""
         try:
