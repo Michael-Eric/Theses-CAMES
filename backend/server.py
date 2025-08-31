@@ -295,9 +295,17 @@ def calculate_stars(citations_count: int) -> int:
         return 0
 
 # Routes
-@api_router.get("/")
+@api_router.get("/", summary="API Status", description="Vérifier le statut de l'API")
 async def root():
-    return {"message": "Thèses CAMES API v1.0.0"}
+    return {
+        "message": "Thèses CAMES API v1.0.0",
+        "status": "operational",
+        "endpoints": {
+            "docs": "/docs",
+            "redoc": "/redoc",
+            "openapi": "/openapi.json"
+        }
+    }
 
 @api_router.get("/theses", response_model=Dict[str, Any])
 async def search_theses(
