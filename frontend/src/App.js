@@ -564,7 +564,10 @@ const Rankings = () => {
                       <div>
                         <h3 className="font-semibold">{author.author_name}</h3>
                         <p className="text-sm text-gray-600">
-                          {author.theses_count} thèse{author.theses_count > 1 ? 's' : ''} • {author.citations_count} citation{author.citations_count > 1 ? 's' : ''}
+                          {author.theses_count} thèse{author.theses_count > 1 ? 's' : ''} • {author.weekly_views} consultation{author.weekly_views > 1 ? 's' : ''} cette semaine
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {author.total_views} consultations au total
                         </p>
                       </div>
                     </div>
