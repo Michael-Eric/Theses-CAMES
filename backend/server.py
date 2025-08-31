@@ -919,4 +919,12 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Cleanup on shutdown"""
+    global import_scheduler
+    
+    if import_scheduler:
+        await import_scheduler.close()
+        logger.info("Import scheduler stopped")
+    
     client.close()
+    logger.info("Database connection closed")
