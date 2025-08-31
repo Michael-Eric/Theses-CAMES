@@ -863,11 +863,10 @@ async def stripe_webhook(request: Request):
         logging.error(f"Error handling Stripe webhook: {e}")
         raise HTTPException(status_code=500, detail="Webhook processing failed")
 
-@app.get("/sitemap.xml", 
+@api_router.get("/sitemap.xml", 
     response_class=Response,
     summary="Plan du site XML",
-    description="Génère automatiquement le sitemap.xml pour l'indexation par les moteurs de recherche",
-    include_in_schema=False
+    description="Génère automatiquement le sitemap.xml pour l'indexation par les moteurs de recherche"
 )
 async def generate_sitemap():
     """Generate XML sitemap for search engines"""
@@ -932,11 +931,10 @@ async def generate_sitemap():
         logger.error(f"Error generating sitemap: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate sitemap")
 
-@app.get("/robots.txt", 
+@api_router.get("/robots.txt", 
     response_class=Response,
     summary="Fichier robots.txt",
-    description="Instructions pour les robots des moteurs de recherche",
-    include_in_schema=False
+    description="Instructions pour les robots des moteurs de recherche"
 )
 async def robots_txt():
     """Generate robots.txt for search engine crawlers"""
@@ -948,7 +946,7 @@ Disallow: /api/checkout/
 Disallow: /api/webhook/
 
 # Sitemap location
-Sitemap: https://theses-cames.preview.emergentagent.com/sitemap.xml
+Sitemap: https://theses-cames.preview.emergentagent.com/api/sitemap.xml
 
 # Crawl delay (be respectful)
 Crawl-delay: 1
