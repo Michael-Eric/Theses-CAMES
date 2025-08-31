@@ -776,7 +776,11 @@ async def get_import_history(limit: int = Query(20, le=100)):
         logger.error(f"Error getting import history: {e}")
         raise HTTPException(status_code=500, detail="Failed to get import history")
 
-@api_router.get("/admin/import/status")
+@api_router.get("/admin/import/status",
+    tags=["admin"],
+    summary="Statut du système d'import",
+    description="Consulter le statut des imports automatiques (admin uniquement)"
+)
 async def get_import_status():
     """Get current import system status"""
     try:
