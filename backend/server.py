@@ -307,7 +307,21 @@ async def root():
         }
     }
 
-@api_router.get("/theses", response_model=Dict[str, Any])
+@api_router.get("/theses", 
+    response_model=Dict[str, Any],
+    summary="Rechercher des thèses",
+    description="""
+    Recherche avancée de thèses avec filtres multiples et pagination.
+    
+    - **q**: Recherche textuelle dans le titre, résumé, mots-clés, auteur
+    - **country**: Filtrer par pays (ex: Sénégal, Mali, Burkina Faso)
+    - **discipline**: Filtrer par discipline (ex: Informatique, Médecine)
+    - **access_type**: Type d'accès (open, paywalled)
+    - **sort**: Tri des résultats (relevance, date, citations, downloads)
+    
+    Retourne les métadonnées complètes avec pagination.
+    """
+)
 async def search_theses(
     q: Optional[str] = Query(None, description="Search query"),
     country: Optional[str] = Query(None),
