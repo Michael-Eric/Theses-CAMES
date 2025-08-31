@@ -287,17 +287,17 @@ def parse_from_mongo(item):
         item['updated_at'] = datetime.fromisoformat(item['updated_at'])
     return item
 
-def calculate_stars(citations_count: int) -> int:
-    """Calculate star rating based on citations count"""
-    if citations_count >= 50:
+def calculate_stars(views_count: int) -> int:
+    """Calculate star rating based on weekly views count"""
+    if views_count >= 200:
         return 5
-    elif citations_count >= 25:
+    elif views_count >= 100:
         return 4
-    elif citations_count >= 10:
+    elif views_count >= 50:
         return 3
-    elif citations_count >= 5:
+    elif views_count >= 20:
         return 2
-    elif citations_count >= 1:
+    elif views_count >= 5:
         return 1
     else:
         return 0
