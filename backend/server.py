@@ -488,16 +488,16 @@ async def create_thesis(thesis_data: ThesisCreate):
 
 @api_router.get("/rankings/authors", 
     response_model=List[AuthorRanking],
-    summary="Classement des auteurs",
+    summary="Auteurs les plus consultés cette semaine",
     description="""
-    Classement des auteurs les plus cités sur la plateforme.
+    Classement des auteurs les plus consultés cette semaine basé sur les vues.
     
-    Le système d'étoiles (1-5★) est basé sur le nombre de citations :
-    - 1★ : 1-4 citations
-    - 2★ : 5-9 citations  
-    - 3★ : 10-24 citations
-    - 4★ : 25-49 citations
-    - 5★ : 50+ citations
+    Le système d'étoiles (1-5★) est basé sur le nombre de consultations hebdomadaires :
+    - 1★ : 5-19 consultations
+    - 2★ : 20-49 consultations  
+    - 3★ : 50-99 consultations
+    - 4★ : 100-199 consultations
+    - 5★ : 200+ consultations
     
     Peut être filtré par discipline.
     """
@@ -506,22 +506,58 @@ async def get_author_rankings(
     discipline: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100)
 ):
-    """Get author rankings by citations"""
+    """Get author rankings by weekly views"""
     try:
+        current_week = get_current_week()
+        
+        # Aggregation pipeline to get weekly views by author
         pipeline = [
-            {"$group": {
-                "_id": "$author_name",
-                "citations_count": {"$sum": "$site_citations_count"},
-                "theses_count": {"$sum": 1},
-                "disciplines": {"$addToSet": "$discipline"}
-            }}
+            # Join theses with weekly views
+            {
+                "$lookup": {
+                    "from": "weekly_views",
+                    "localField": "id",
+                    "foreignField": "thesis_id",
+                    "as": "weekly_views"
+                }
+            },
+            # Match current week
+            {
+                "$addFields": {
+                    "current_week_views": {
+                        "$sum": {
+                            "$map": {
+                                "input": "$weekly_views",
+                                "as": "view",
+                                "in": {
+                                    "$cond": [
+                                        {"$eq": ["$$view.week_start", current_week]},
+                                        "$$view.views_count",
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         ]
         
         if discipline:
             pipeline.insert(0, {"$match": {"discipline": {"$regex": re.escape(discipline), "$options": "i"}}})
         
         pipeline.extend([
-            {"$sort": {"citations_count": -1}},
+            # Group by author
+            {
+                "$group": {
+                    "_id": "$author_name",
+                    "weekly_views": {"$sum": "$current_week_views"},
+                    "total_views": {"$sum": "$views_count"},
+                    "theses_count": {"$sum": 1},
+                    "disciplines": {"$addToSet": "$discipline"}
+                }
+            },
+            {"$sort": {"weekly_views": -1}},
             {"$limit": limit}
         ])
         
@@ -531,15 +567,16 @@ async def get_author_rankings(
         for result in results:
             rankings.append(AuthorRanking(
                 author_name=result["_id"],
-                citations_count=result["citations_count"],
-                stars=calculate_stars(result["citations_count"]),
+                weekly_views=result["weekly_views"],
+                total_views=result["total_views"],
+                stars=calculate_stars(result["weekly_views"]),
                 theses_count=result["theses_count"],
                 disciplines=result["disciplines"]
             ))
         
         return rankings
     except Exception as e:
-        logging.error(f"Error getting author rankings: {e}")
+        logger.error(f"Error getting author rankings: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @api_router.get("/rankings/universities", 
