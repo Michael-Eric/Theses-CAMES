@@ -148,13 +148,30 @@ class Order(BaseModel):
     invoice_url: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class Metrics(BaseModel):
+class PaymentTransaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     thesis_id: str
-    views: int = 0
-    downloads: int = 0
-    cites_on_site: int = 0
-    last_computed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    amount: float
+    currency: str
+    provider: PaymentProvider = PaymentProvider.stripe
+    status: str = "pending"  # pending, completed, failed, expired
+    payment_status: str = "initiated"  # initiated, paid, failed, canceled
+    session_id: Optional[str] = None
+    buyer_email: Optional[str] = None
+    metadata: Optional[Dict[str, str]] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CheckoutRequest(BaseModel):
+    thesis_id: str
+    origin_url: str
+
+class WebhookEvent(BaseModel):
+    event_type: str
+    event_id: str
+    session_id: str
+    payment_status: str
+    metadata: Dict[str, str]
 
 class AuthorRanking(BaseModel):
     author_name: str
