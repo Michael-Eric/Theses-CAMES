@@ -389,12 +389,12 @@ const FilterPanel = ({ filters, onFilterChange, stats }) => {
 
         <div>
           <label className="text-sm font-medium mb-2 block">Discipline</label>
-          <Select value={filters.discipline || ''} onValueChange={(value) => onFilterChange('discipline', value || null)}>
+          <Select value={filters.discipline || 'all'} onValueChange={(value) => onFilterChange('discipline', value === 'all' ? null : value)}>
             <SelectTrigger>
               <SelectValue placeholder="Toutes disciplines" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Toutes disciplines</SelectItem>
+              <SelectItem value="all">Toutes disciplines</SelectItem>
               {stats?.top_disciplines?.map((discipline) => (
                 <SelectItem key={discipline.name} value={discipline.name}>
                   {discipline.name} ({discipline.count})
