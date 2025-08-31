@@ -594,6 +594,14 @@ class ThesesCAMESAPITester:
         print("\n🔎 ADVANCED SEARCH TESTS")
         self.test_filters_and_search()
         
+        # Test new university filter functionality
+        print("\n🏛️ UNIVERSITY FILTER TESTS")
+        self.test_university_filter()
+        
+        # Test enriched database
+        print("\n📊 DATABASE ENRICHMENT TESTS")
+        self.test_enriched_database()
+        
         # Test authentication system
         print("\n🔐 AUTHENTICATION TESTS")
         self.test_authentication_endpoints()
