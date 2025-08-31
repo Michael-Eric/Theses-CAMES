@@ -73,6 +73,7 @@ const Header = ({ onSearch, searchQuery, setSearchQuery }) => {
               <University className="w-4 h-4 mr-2" />
               Universités
             </Button>
+            <UserMenu />
           </div>
         </div>
       </div>
