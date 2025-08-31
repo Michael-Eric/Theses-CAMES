@@ -272,3 +272,4 @@ class ImportScheduler:
         self.stop()
         await self.hal_connector.close()
         await self.greenstone_connector.close()
+        await self.enhanced_connector.close()
