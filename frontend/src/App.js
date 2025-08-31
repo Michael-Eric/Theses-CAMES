@@ -552,15 +552,15 @@ const Rankings = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Chargement des palmarès...</div>;
+    return <div className="text-center py-8">{t('common.loadingRankings')}</div>;
   }
 
   return (
     <div className="space-y-8">
       <Tabs defaultValue="authors" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="authors">Auteurs les plus consultés cette semaine</TabsTrigger>
-          <TabsTrigger value="universities">Universités les plus consultées</TabsTrigger>
+          <TabsTrigger value="authors">{t('rankings.authorsWeekly')}</TabsTrigger>
+          <TabsTrigger value="universities">{t('rankings.universitiesWeekly')}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="authors" className="space-y-4">
