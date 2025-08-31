@@ -595,12 +595,21 @@ async def get_statistics():
         ]
         top_countries = await db.theses.aggregate(countries_pipeline).to_list(length=10)
         
+        # Get top universities
+        universities_pipeline = [
+            {"$group": {"_id": "$university", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        top_universities = await db.theses.aggregate(universities_pipeline).to_list(length=10)
+        
         return {
             "total_theses": total_theses,
             "open_access": open_access,
             "paywalled": paywalled,
             "top_disciplines": [{"name": d["_id"], "count": d["count"]} for d in top_disciplines],
-            "top_countries": [{"name": c["_id"], "count": c["count"]} for c in top_countries]
+            "top_countries": [{"name": c["_id"], "count": c["count"]} for c in top_countries],
+            "top_universities": [{"name": u["_id"], "count": u["count"]} for u in top_universities]
         }
     except Exception as e:
         logging.error(f"Error getting statistics: {e}")
